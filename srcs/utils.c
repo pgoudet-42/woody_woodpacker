@@ -49,3 +49,11 @@ int get_fd(int argc, char **argv, struct stat **buf) {
     }
     return (fd);
 }
+
+int memncat(void *src, size_t index, void *dst, size_t n) {
+    size_t i = -1;
+    
+    while (++i < n)
+        ((unsigned char *)src)[index + i] = ((unsigned char *)dst)[i];
+    return (0);
+}

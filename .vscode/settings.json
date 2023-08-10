@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "cstddef": "c"
+        "cstddef": "c",
+        "libft.h": "c",
+        "errno.h": "c"
     }
 }

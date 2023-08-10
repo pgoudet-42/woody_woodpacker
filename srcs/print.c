@@ -16,11 +16,12 @@ void ft_print_stat(struct stat *buf) {
 void ft_print_hexa_raw(char *buf, size_t len) {
     size_t i = 0;
     while (i < len) {
-        if (i == 0x40 || i == (0x40 + 0x38))
+        if (i % 40 == 0)
             printf("\n");
         printf("%hhx ", buf[i]);
         i++;
     }
+    printf("\n");
 }
 
 void print_elfHeader64(struct ELFheaders64 elfHeader) {

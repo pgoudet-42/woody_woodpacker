@@ -11,6 +11,8 @@
 #ifndef WOODY_H
 #define WOODY_H
 
+#define VIRUS_SIZE 10
+
 struct ELFheaders64 {
     unsigned int ei_mag0;
     unsigned char ei_class;
@@ -73,6 +75,12 @@ struct sym_name {
     char *name;
 };
 
+struct crypt_res {
+    char *data;
+    char *key;
+    size_t len;
+};
+
 char *toBinary(int n, int len);
 void ft_print_stat(struct stat *buf);
 void print_elf64_sym(struct Elf64_Sym sym);
@@ -99,8 +107,16 @@ int open_file(char *path);
 void sort_tab(int **tab, size_t size);
 void *ft_mmap(size_t lengthint, int prot, int flags, int fd, off_t offset);
 int get_fd(int argc, char **argv, struct stat **buf);
+int memncat(void *src, size_t index, void *dst, size_t n);
 
-char *encrypt(char *buf, size_t size);
-char *decrypt(char *buf, size_t size);
+char *encrypt_b64(char *buf, size_t size);
+char *decrypt_b64(char *buf, size_t size);
+
+struct crypt_res *crypt_xor(char *buf, size_t len);
+struct crypt_res *decrypt_xor(struct crypt_res *ptr);
+
+int write_file(char *buf, size_t size, struct sheaders64 section_hd);
+
+int change_offset_sections(char *buf, struct sheaders64 *sheaders, struct ELFheaders64 file_header);
 
 #endif
