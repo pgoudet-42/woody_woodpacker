@@ -4,8 +4,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include "libft/libft.h"
+#include "../libft/libft.h"
 #include <string.h>
+#include <errno.h>
 
 #ifndef WOODY_H
 #define WOODY_H
@@ -84,19 +85,22 @@ void print_sections_names(struct sheaders64 *sheaders, char *buf, struct ELFhead
 int get_file_info(int fd, struct stat *buf);
 char *get_sym_name_64(char *buf, struct ELFheaders64 elfHeader ,struct sheaders64 *sheaders, unsigned int name);
 char *get_section_name_64(char *buf, struct ELFheaders64 elfHeader ,struct sheaders64 *sheaders, unsigned int name);
-struct sheaders64 *get_string_offsets_64(struct ELFheaders64 elfHeader, char *buf);
+struct sheaders64 *get_section_headers_64(struct ELFheaders64 elfHeader, char *buf);
 struct Elf64_Sym *get_syms_64(struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, char *buf, size_t *size);
 struct sym_name *get_sys_tab_64(struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, char *buf, int *j);
 
 struct ELFheaders64 get_elfHeader64_little_endian(char *buf);
 struct pheaders64 get_pHeader64_little_endian(char *buf, struct ELFheaders64 *elfHeader);
-struct sheaders64 get_sHeaders64_little_endian(char *buf, struct ELFheaders64 *elfHeader, int nb);
+struct sheaders64 get_sHeader64_little_endian(char *buf, struct ELFheaders64 *elfHeader, int nb);
 struct Elf64_Sym get_sym64_section_little(char *buf, struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, int i);
 
 
 int open_file(char *path);
 void sort_tab(int **tab, size_t size);
 void *ft_mmap(size_t lengthint, int prot, int flags, int fd, off_t offset);
+int get_fd(int argc, char **argv, struct stat **buf);
 
+char *encrypt(char *buf, size_t size);
+char *decrypt(char *buf, size_t size);
 
 #endif

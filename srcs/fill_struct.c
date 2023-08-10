@@ -63,7 +63,7 @@ struct pheaders64 get_pHeader64_little_endian(char *buf, struct ELFheaders64 *el
     return (pheader);
 }
 
-struct sheaders64 get_sHeaders64_little_endian(char *buf, struct ELFheaders64 *elfHeader, int nb) {
+struct sheaders64 get_sHeader64_little_endian(char *buf, struct ELFheaders64 *elfHeader, int nb) {
     struct sheaders64 sheader;
     size_t offset;
 

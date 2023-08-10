@@ -40,7 +40,7 @@ char *get_section_name_64(char *buf, struct ELFheaders64 elfHeader ,struct shead
 
     if (name == 0)
         return (NULL);
-    i = elfHeader.e_shstrndx - 1;
+    i = elfHeader.e_shstrndx;
     if (sheaders[i].sh_type != 0x03)
         return (NULL);
 
@@ -58,7 +58,7 @@ char *get_section_name_64(char *buf, struct ELFheaders64 elfHeader ,struct shead
     return (str);
 }
 
-struct sheaders64 *get_string_offsets_64(struct ELFheaders64 elfHeader, char *buf) {
+struct sheaders64 *get_section_headers_64(struct ELFheaders64 elfHeader, char *buf) {
     struct sheaders64 *sheaders;
 
     sheaders = malloc(sizeof(struct sheaders64) * elfHeader.e_shnum);
@@ -66,8 +66,7 @@ struct sheaders64 *get_string_offsets_64(struct ELFheaders64 elfHeader, char *bu
         return (NULL);
     
     for (int i = 0; i < elfHeader.e_shnum; i++)
-        (sheaders)[i] = get_sHeaders64_little_endian(buf, &elfHeader, i);
-
+        sheaders[i] = get_sHeader64_little_endian(buf, &elfHeader, i);
     return (sheaders);
 }
 

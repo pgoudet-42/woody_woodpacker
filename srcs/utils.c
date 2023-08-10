@@ -3,7 +3,7 @@
 int open_file(char *path) {
     int fd = -1;
     
-    fd = open(path, O_RDONLY);
+    fd = open(path, O_RDWR);
     return (fd);
 }
 
@@ -28,4 +28,24 @@ void *ft_mmap(size_t lengthint, int prot, int flags, int fd, off_t offset) {
 
     buf = mmap(NULL, lengthint, prot, flags, fd, offset);
     return (buf);
+}
+
+int get_fd(int argc, char **argv, struct stat **buf) {
+    int fd;
+
+    if (argc == 1)
+        argv[1] = "./a.out";
+    fd = open_file(argv[1]);
+    if (fd == -1) {
+        write(1, "Error: file opening failed\n", strlen("Error: file opening failed\n"));
+        return (-1);
+    }
+    *buf = malloc(sizeof(struct stat));
+    if (*buf == NULL)
+        return(-1);
+    if (get_file_info(fd, *buf) == -1) {
+        write(1, "Error: fstat failed on file\n", strlen("Error: fstat failed on file\n"));
+        return (-1);
+    }
+    return (fd);
 }
