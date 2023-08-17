@@ -224,3 +224,16 @@ void    print_rel64(Elf64_Rel rel) {
     (unsigned int)(rel.r_info >> 24), (unsigned int)(rel.r_info >> 16), \
     (unsigned int)(rel.r_info >> 8), (unsigned int)(rel.r_info));
 }
+
+void print_Elf64_Dyn(Elf64_Dyn dyn) {
+    printf("dyn.d_tag: %.2hhx %.2hhx %.2hhx %.2hhx %.2hhx %.2hhx %.2hhx %.2hhx\n", \
+    (unsigned int)(dyn.d_tag >> 56), (unsigned int)(dyn.d_tag >> 48), \
+    (unsigned int)(dyn.d_tag >> 40), (unsigned int)(dyn.d_tag >> 32), \
+    (unsigned int)(dyn.d_tag >> 24), (unsigned int)(dyn.d_tag >> 16), \
+    (unsigned int)(dyn.d_tag >> 8), (unsigned int)(dyn.d_tag));
+    printf("dyn.d_un: %.2hhx %.2hhx %.2hhx %.2hhx %.2hhx %.2hhx %.2hhx %.2hhx\n", \
+    (unsigned int)(dyn.d_un >> 56), (unsigned int)(dyn.d_un >> 48), \
+    (unsigned int)(dyn.d_un >> 40), (unsigned int)(dyn.d_un >> 32), \
+    (unsigned int)(dyn.d_un >> 24), (unsigned int)(dyn.d_un >> 16), \
+    (unsigned int)(dyn.d_un >> 8), (unsigned int)(dyn.d_un));
+}

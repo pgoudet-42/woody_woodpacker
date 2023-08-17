@@ -93,20 +93,10 @@ struct sheaders64 get_sHeader64_little_endian(unsigned char *buf, struct ELFhead
     return (sheader);
 }
 
-struct Elf64_Sym get_sym64_section_little(unsigned char *buf, struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, int i) {
+struct Elf64_Sym fill_sym64_struct(size_t offset, unsigned char *buf) {
     struct Elf64_Sym sym;
-    size_t offset = 0;
-    size_t begin = 0;
-
-    for (int i = 0; i < elfHeader.e_shnum; i++) {
-        if (sheaders[i].sh_type == 0x02) {
-            begin = sheaders[i].sh_offset;
-            break;
-        }
-    }
 
     memset(&sym, 0, sizeof(struct Elf64_Sym));
-    offset = begin + sizeof(struct Elf64_Sym) * i;
     sym.st_name = ((unsigned char)buf[offset + 0x00]) + ((unsigned char)buf[offset + 0x01] << 8) + ((unsigned char)buf[offset + 0x02] << 16) + ((unsigned char)buf[offset + 0x03] << 24);
     sym.st_info = (unsigned char)buf[offset + 0x04];
     sym.st_other = (unsigned char)buf[offset + 0x05];
@@ -115,6 +105,22 @@ struct Elf64_Sym get_sym64_section_little(unsigned char *buf, struct ELFheaders6
     ((unsigned long)buf[offset + 0x0c] << 32) + ((unsigned long)buf[offset + 0x0d] << 40) + ((unsigned long)buf[offset + 0x0e] << 48) + ((unsigned long)buf[offset + 0x0f] << 56);
     sym.st_size = ((unsigned char)buf[offset + 0x10]) + ((unsigned char)buf[offset + 0x11] << 8) + ((unsigned char)buf[offset + 0x12] << 16) + ((unsigned char)buf[offset + 0x13] << 24) +\
     ((unsigned long)buf[offset + 0x14] << 32) + ((unsigned long)buf[offset + 0x15] << 40) + ((unsigned long)buf[offset + 0x16] << 48) + ((unsigned long)buf[offset + 0x17] << 56);
+    return (sym);
+}
+
+struct Elf64_Sym get_sym64_section_little(unsigned char *buf, struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, int i) {
+    struct Elf64_Sym sym;
+    size_t offset = 0;
+    size_t begin = 0;
+
+    for (int j = 0; j < elfHeader.e_shnum; j++) {
+        if (sheaders[j].sh_type == 0x02) {
+            begin = sheaders[j].sh_offset;
+            break;
+        }
+    }
+    offset = begin + sizeof(struct Elf64_Sym) * i;
+    sym = fill_sym64_struct(offset, buf);
     return (sym);
 }
 
@@ -151,4 +157,40 @@ Elf64_Rel    get_rel64_little_endian(unsigned char *buf, struct sheaders64 shead
     ((unsigned long)buf[offset + 0x0c] << 32) + ((unsigned long)buf[offset + 0x0d] << 40) + ((unsigned long)buf[offset + 0x0e] << 48) + ((unsigned long)buf[offset + 0x0f] << 56);
 
     return (rel);
+}
+
+Elf64_Dyn fill_Elf64_Dyn_little(size_t offset, unsigned char *buf) {
+     Elf64_Dyn dyn;
+
+    dyn.d_tag = ((buf[offset + 0x00] & 0xFF)) | ((buf[offset + 0x01] & 0xFF) << 8) | ((buf[offset + 0x02] & 0xFF) << 16) | ((buf[offset + 0x03] & 0xFF) << 24) |\
+    ((unsigned long)buf[offset + 0x04] << 32) | ((unsigned long)buf[offset + 0x05] << 40) | ((unsigned long)buf[offset + 0x06] << 48) | ((unsigned long)buf[offset + 0x07] << 56);
+    dyn.d_un = ((buf[offset + 0x08] & 0xFF)) | ((buf[offset + 0x09] & 0xFF) << 8) | ((buf[offset + 0x0a] & 0xFF) << 16) | ((buf[offset + 0x0b] & 0xFF) << 24) |\
+    ((unsigned long)buf[offset + 0x0c] << 32 ) | ((unsigned long)buf[offset + 0x0d] << 40) | ((unsigned long)buf[offset + 0x0e] << 48) | ((unsigned long)buf[offset + 0x0f] << 56);
+
+    return (dyn);
+}
+
+Elf64_Dyn *get_Elf64_Dyns_little(unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader) {
+    int i;
+    size_t offset;
+    Elf64_Dyn *dyns;
+
+    i = get_section_index(".dynamic", buf, sheaders, elfHeader);
+    offset = sheaders[i].sh_offset;
+    if (offset <= 0)
+        return (NULL);
+    dyns = malloc(sheaders[i].sh_size + sizeof(void *));
+    if (!dyns) {
+        perror("Error get_elf64_dyns_little: ");
+        exit(1);
+    }
+
+    for(long unsigned int j = 0; j < sheaders[i].sh_size / sizeof(Elf64_Dyn); j++) {
+        dyns[j] = fill_Elf64_Dyn_little(offset, buf);
+        if (dyns[j].d_tag == 0x0) {
+            break;
+        }
+        offset += sizeof(Elf64_Dyn);
+    }
+    return (dyns);
 }

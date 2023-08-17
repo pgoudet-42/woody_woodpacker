@@ -11,7 +11,6 @@
 #define ALIGN 48
 #define ENTSIZE 56
 
-
 size_t offset_injection;
 
 void    change_entry_point(unsigned char *buf, size_t new_entry_point) {
@@ -58,13 +57,9 @@ void change_rel_offset(unsigned char *buf, struct sheaders64 sheader, Elf64_Rel 
     nb = sheader.sh_size / sizeof(Elf64_Rel);
     for (int j = 0; j < nb; j++) {
         offset = get_rel_a_offset(sheader, j, sizeof(Elf64_Rel));
-        printf("j = %d\n", j);
-        print_rel64(rels[j]);
         if (rels[j].r_offset > offset_injection)
             additionSurOctets(&(buf[offset]), 8, CODE_SIZE);
         rels[j] = get_rel64_little_endian(buf, sheader, j);
-        print_rel64(rels[j]);
-        printf("\n");
     }
 }
 
@@ -75,13 +70,9 @@ void change_rela_offset(unsigned char *buf, struct sheaders64 sheader, Elf64_Rel
     nb = sheader.sh_size / sizeof(Elf64_Rela);
     for (int j = 0; j < nb; j++) {
         offset = get_rel_a_offset(sheader, j, sizeof(Elf64_Rela));
-        printf("j = %d\n", j);
-        print_rela64(relas[j]);
         if (relas[j].r_offset > offset_injection)
             additionSurOctets(&(buf[offset]), 8, CODE_SIZE);
         relas[j] = get_rela64_little_endian(buf, sheader, j);
-        print_rela64(relas[j]);
-        printf("\n");
     }
 }
 
@@ -119,7 +110,8 @@ unsigned char *change_buffer(unsigned char *buf, struct sheaders64 *sheaders, in
     elfHeader = get_elfHeader64_little_endian(buf);
     change_sections_header_offset(buf, section_index, elfHeader);
     sheaders = get_section_headers_64(elfHeader, buf);
-    change_symbole_size(SYMBOL, section_index, buf, sheaders, CODE_SIZE, elfHeader);
+    change_symbole_size(SYMBOL, section_index, buf, sheaders, elfHeader);
     change_rela(buf, sheaders, elfHeader);
+    // change_dynamic_offset(buf, sheaders, elfHeader);
     return (buf);
 }

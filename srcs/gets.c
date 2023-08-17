@@ -7,13 +7,36 @@ int get_file_info(int fd, struct stat *buf) {
     return (res);
 }
 
+char *get_dynsym_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,struct sheaders64 *sheaders, unsigned int name) {
+    char *str = NULL;
+    size_t offset = 0;
+    size_t i, j;
+
+    // if (name == 0)
+    //     return (NULL);
+    i = get_section_index(".dynstr", buf, sheaders, elfHeader);
+
+    offset = sheaders[i].sh_offset + name;
+    j = 0;
+    while (j <= sheaders[i].sh_size) {
+        if (buf[offset + j] == 0 && j > 0)
+            break;
+        j++;
+    }
+    if (sheaders[i].sh_size <= j)
+        return (NULL);
+    str = malloc(j + 1);
+    ft_strlcpy(str, (char *)&(buf[offset]), j + 1);
+    return (str);
+}
+
 char *get_sym_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,struct sheaders64 *sheaders, unsigned int name) {
     char *str = NULL;
     size_t offset = 0;
     size_t i, j;
 
-    if (name == 0)
-        return (NULL);
+    // if (name == 0)
+    //     return (NULL);
     i = elfHeader.e_shstrndx - 1;
     if (sheaders[i].sh_type != 0x03)
         return (NULL);
