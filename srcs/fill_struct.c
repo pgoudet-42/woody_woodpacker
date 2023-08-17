@@ -1,6 +1,6 @@
 #include "../include/woody.h"
 
-struct ELFheaders64 get_elfHeader64_little_endian(char *buf) {
+struct ELFheaders64 get_elfHeader64_little_endian(unsigned char *buf) {
     struct ELFheaders64 elfHeader;
 
     elfHeader.ei_mag0 = ((unsigned char)buf[0x0]) + ((unsigned char)buf[0x1] << 8) + ((unsigned char)buf[0x2] << 16) + ((unsigned char)buf[0x3] << 24);
@@ -34,11 +34,11 @@ struct ELFheaders64 get_elfHeader64_little_endian(char *buf) {
 }
 
 
-struct pheaders64 get_pHeader64_little_endian(char *buf, struct ELFheaders64 *elfHeader) {
+struct pheaders64 get_pHeader64_little_endian(unsigned char *buf, struct ELFheaders64 *elfHeader, int nb) {
     struct pheaders64 pheader;
     size_t offset;
 
-    offset = elfHeader->e_phoff;
+    offset = elfHeader->e_phoff + elfHeader->e_phentsize * nb;
     memset(&pheader, 0, sizeof(struct pheaders64));
     if (offset < 0x40)
         return (pheader);
@@ -55,15 +55,15 @@ struct pheaders64 get_pHeader64_little_endian(char *buf, struct ELFheaders64 *el
     ((unsigned long)buf[offset + 0x24] << 32) + ((unsigned long)buf[offset + 0x25] << 40) + ((unsigned long)buf[offset + 0x26] << 48) + ((unsigned long)buf[offset + 0x27] << 56); 
     pheader.p_memsz = ((unsigned char)buf[offset + 0x28]) + ((unsigned char)buf[offset + 0x29] << 8) + ((unsigned char)buf[offset + 0x2a] << 16) + ((unsigned char)buf[offset + 0x2b] << 24) +\
     ((unsigned long)buf[offset + 0x2c] << 32) + ((unsigned long)buf[offset + 0x2d] << 40) + ((unsigned long)buf[offset + 0x2e] << 48) + ((unsigned long)buf[offset + 0x2f] << 56); 
-    pheader.p_flags = ((unsigned char)buf[offset + 0x30]) + ((unsigned char)buf[offset + 0x31] << 8) + ((unsigned char)buf[offset + 0x32] << 16) + ((unsigned char)buf[offset + 0x33] << 24) +\
+    pheader.p_align = ((unsigned char)buf[offset + 0x30]) + ((unsigned char)buf[offset + 0x31] << 8) + ((unsigned char)buf[offset + 0x32] << 16) + ((unsigned char)buf[offset + 0x33] << 24) +\
     ((unsigned long)buf[offset + 0x34] << 32) + ((unsigned long)buf[offset + 0x35] << 40) + ((unsigned long)buf[offset + 0x36] << 48) + ((unsigned long)buf[offset + 0x37] << 56); 
-    pheader.p_align = ((unsigned char)buf[offset + 0x38]) + ((unsigned char)buf[offset + 0x39] << 8) + ((unsigned char)buf[offset + 0x3a] << 16) + ((unsigned char)buf[offset + 0x3b] << 24) +\
+    /*pheader.p_align = ((unsigned char)buf[offset + 0x38]) + ((unsigned char)buf[offset + 0x39] << 8) + ((unsigned char)buf[offset + 0x3a] << 16) + ((unsigned char)buf[offset + 0x3b] << 24) +\
     ((unsigned long)buf[offset + 0x3c] << 32) + ((unsigned long)buf[offset + 0x3d] << 40) + ((unsigned long)buf[offset + 0x3e] << 48) + ((unsigned long)buf[offset + 0x3f] << 56); 
-
+*/
     return (pheader);
 }
 
-struct sheaders64 get_sHeader64_little_endian(char *buf, struct ELFheaders64 *elfHeader, int nb) {
+struct sheaders64 get_sHeader64_little_endian(unsigned char *buf, struct ELFheaders64 *elfHeader, int nb) {
     struct sheaders64 sheader;
     size_t offset;
 
@@ -75,33 +75,25 @@ struct sheaders64 get_sHeader64_little_endian(char *buf, struct ELFheaders64 *el
 
     sheader.sh_name = ((unsigned char)buf[offset + 0x00]) + ((unsigned char)buf[offset + 0x01] << 8) + ((unsigned char)buf[offset + 0x02] << 16) + ((unsigned char)buf[offset + 0x03] << 24);
     sheader.sh_type = ((unsigned char)buf[offset + 0x04]) + ((unsigned char)buf[offset + 0x05] << 8) + ((unsigned char)buf[offset + 0x06] << 16) + ((unsigned char)buf[offset + 0x07] << 24);
-
     sheader.sh_flags = ((unsigned char)buf[offset + 0x08]) + ((unsigned char)buf[offset + 0x09] << 8) + ((unsigned char)buf[offset + 0x0a] << 16) + ((unsigned char)buf[offset + 0x0b] << 24) +\
     ((unsigned long)buf[offset + 0x0c] << 32) + ((unsigned long)buf[offset + 0x0d] << 40) + ((unsigned long)buf[offset + 0x0e] << 48) + ((unsigned long)buf[offset + 0x0f] << 56);
-
     sheader.sh_addr = ((unsigned char)buf[offset + 0x10]) + ((unsigned char)buf[offset + 0x11] << 8) + ((unsigned char)buf[offset + 0x12] << 16) + ((unsigned char)buf[offset + 0x13] << 24) +\
     ((unsigned long)buf[offset + 0x14] << 32) + ((unsigned long)buf[offset + 0x15] << 40) + ((unsigned long)buf[offset + 0x16] << 48) + ((unsigned long)buf[offset + 0x17] << 56);
-
     sheader.sh_offset = ((unsigned char)buf[offset + 0x18]) + ((unsigned char)buf[offset + 0x19] << 8) + ((unsigned char)buf[offset + 0x1a] << 16) + ((unsigned char)buf[offset + 0x1b] << 24) +\
     ((unsigned long)buf[offset + 0x1c] << 32) + ((unsigned long)buf[offset + 0x1d] << 40) + ((unsigned long)buf[offset + 0x1e] << 48) + ((unsigned long)buf[offset + 0x1f] << 56); 
-
     sheader.sh_size = ((unsigned char)buf[offset + 0x20]) + ((unsigned char)buf[offset + 0x21] << 8) + ((unsigned char)buf[offset + 0x22] << 16) + ((unsigned char)buf[offset + 0x23] << 24) +\
     ((unsigned long)buf[offset + 0x24] << 32) + ((unsigned long)buf[offset + 0x25] << 40) + ((unsigned long)buf[offset + 0x26] << 48) + ((unsigned long)buf[offset + 0x27] << 56);
-
     sheader.sh_link = ((unsigned char)buf[offset + 0x28]) + ((unsigned char)buf[offset + 0x29] << 8) + ((unsigned char)buf[offset + 0x2a] << 16) + ((unsigned char)buf[offset + 0x2b] << 24);
     sheader.sh_info = ((unsigned char)buf[offset + 0x2c]) + ((unsigned char)buf[offset + 0x2d] << 8) + ((unsigned char)buf[offset + 0x2e] << 16) + ((unsigned char)buf[offset + 0x2f] << 24);
-
     sheader.sh_addralign = ((unsigned char)buf[offset + 0x30]) + ((unsigned char)buf[offset + 0x31] << 8) + ((unsigned char)buf[offset + 0x32] << 16) + ((unsigned char)buf[offset + 0x33] << 24) +\
-    ((unsigned long)buf[offset + 0x34] << 32) + ((unsigned long)buf[offset + 0x35] << 40) + ((unsigned long)buf[offset + 0x36] << 48) + ((unsigned long)buf[offset + 0x37] << 56); 
-
+    ((unsigned long)buf[offset + 0x34] << 32) + ((unsigned long)buf[offset + 0x35] << 40) + ((unsigned long)buf[offset + 0x36] << 48) + ((unsigned long)buf[offset + 0x37] << 56);
     sheader.sh_entsize = ((unsigned char)buf[offset + 0x38]) + ((unsigned char)buf[offset + 0x39] << 8) + ((unsigned char)buf[offset + 0x3a] << 16) + ((unsigned char)buf[offset + 0x3b] << 24) +\
     ((unsigned long)buf[offset + 0x3c] << 32) + ((unsigned long)buf[offset + 0x3d] << 40) + ((unsigned long)buf[offset + 0x3e] << 48) + ((unsigned long)buf[offset + 0x3f] << 56); 
-
 
     return (sheader);
 }
 
-struct Elf64_Sym get_sym64_section_little(char *buf, struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, int i) {
+struct Elf64_Sym get_sym64_section_little(unsigned char *buf, struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, int i) {
     struct Elf64_Sym sym;
     size_t offset = 0;
     size_t begin = 0;
@@ -124,4 +116,39 @@ struct Elf64_Sym get_sym64_section_little(char *buf, struct ELFheaders64 elfHead
     sym.st_size = ((unsigned char)buf[offset + 0x10]) + ((unsigned char)buf[offset + 0x11] << 8) + ((unsigned char)buf[offset + 0x12] << 16) + ((unsigned char)buf[offset + 0x13] << 24) +\
     ((unsigned long)buf[offset + 0x14] << 32) + ((unsigned long)buf[offset + 0x15] << 40) + ((unsigned long)buf[offset + 0x16] << 48) + ((unsigned long)buf[offset + 0x17] << 56);
     return (sym);
+}
+
+Elf64_Rela    get_rela64_little_endian(unsigned char *buf, struct sheaders64 sheader, int i) {
+    Elf64_Rela rela;
+    size_t offset = 0;
+
+    memset(&rela, 0, sizeof(Elf64_Rela));
+    if (i > (int)(sheader.sh_size / sizeof(Elf64_Rela)))
+        return (rela);
+    offset = sheader.sh_offset + i * sizeof(Elf64_Rela);
+
+    rela.r_offset = ((buf[offset + 0x00] & 0xFF)) + ((buf[offset + 0x01] & 0xFF) << 8) + ((buf[offset + 0x02] & 0xFF) << 16) + ((buf[offset + 0x03] & 0xFF) << 24) +\
+    ((unsigned long)buf[offset + 0x04] << 32) + ((unsigned long)buf[offset + 0x05] << 40) + ((unsigned long)buf[offset + 0x06] << 48) + ((unsigned long)buf[offset + 0x07] << 56);
+    rela.r_info = ((buf[offset + 0x08] & 0xFF)) + ((buf[offset + 0x09] & 0xFF) << 8) + ((buf[offset + 0x0a] & 0xFF) << 16) + ((buf[offset + 0x0b] & 0xFF) << 24) +\
+    ((unsigned long)buf[offset + 0x0c] << 32) + ((unsigned long)buf[offset + 0x0d] << 40) + ((unsigned long)buf[offset + 0x0e] << 48) + ((unsigned long)buf[offset + 0x0f] << 56);
+    rela.r_addend = ((buf[offset + 0x10] & 0xFF)) + ((buf[offset + 0x11] & 0xFF) << 8) + ((buf[offset + 0x12] & 0xFF) << 16) + ((buf[offset + 0x13] & 0xFF) << 24) +\
+    ((unsigned long)buf[offset + 0x14] << 32) + ((unsigned long)buf[offset + 0x15] << 40) + ((unsigned long)buf[offset + 0x16] << 48) + ((unsigned long)buf[offset + 0x17] << 56);
+
+    return (rela);
+}
+
+Elf64_Rel    get_rel64_little_endian(unsigned char *buf, struct sheaders64 sheader, int i) {
+    Elf64_Rel rel;
+    size_t offset = 0;
+
+    memset(&rel, 0, sizeof(Elf64_Rel));
+    if (i > (int)(sheader.sh_size / sizeof(Elf64_Rel)))
+        return (rel);
+    offset = sheader.sh_offset + i * sizeof(Elf64_Rel);
+    rel.r_offset = ((buf[offset + 0x00] & 0xFF)) + ((buf[offset + 0x01] & 0xFF) << 8) + ((buf[offset + 0x02] & 0xFF) << 16) + ((buf[offset + 0x03] & 0xFF) << 24) +\
+    ((unsigned long)buf[offset + 0x04] << 32) + ((unsigned long)buf[offset + 0x05] << 40) + ((unsigned long)buf[offset + 0x06] << 48) + ((unsigned long)buf[offset + 0x07] << 56);
+    rel.r_info = ((buf[offset + 0x08] & 0xFF)) + ((buf[offset + 0x09] & 0xFF) << 8) + ((buf[offset + 0x0a] & 0xFF) << 16) + ((buf[offset + 0x0b] & 0xFF) << 24) +\
+    ((unsigned long)buf[offset + 0x0c] << 32) + ((unsigned long)buf[offset + 0x0d] << 40) + ((unsigned long)buf[offset + 0x0e] << 48) + ((unsigned long)buf[offset + 0x0f] << 56);
+
+    return (rel);
 }

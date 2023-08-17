@@ -18,9 +18,9 @@ char *generate_random_key(size_t len) {
     return str;
 }
 
-char *apply_xor(char *buf, size_t len, char *key) {
+unsigned char *apply_xor(unsigned char *buf, size_t len, char *key) {
     size_t i = 0;
-    char *data = NULL;
+    unsigned char *data = NULL;
 
     data = malloc(len + 1);
     if (!data)
@@ -33,7 +33,7 @@ char *apply_xor(char *buf, size_t len, char *key) {
     return (data);
 }
 
-struct crypt_res *crypt_xor(char *buf, size_t len) {
+struct crypt_res *crypt_xor(unsigned char *buf, size_t len) {
     struct crypt_res *resultat;
 
     resultat = malloc(sizeof(struct crypt_res));
@@ -49,7 +49,7 @@ struct crypt_res *crypt_xor(char *buf, size_t len) {
 }
 
 struct crypt_res *decrypt_xor(struct crypt_res *ptr) {
-    char *res;
+    unsigned char *res;
 
     res = apply_xor(ptr->data, ptr->len, ptr->key);
     free(ptr->data);

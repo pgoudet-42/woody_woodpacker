@@ -2,8 +2,8 @@
 
 char *base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-char *encrypt_b64(char *buf, size_t size) {
-    char *encrypt_buf = NULL;
+unsigned char *encrypt_b64(unsigned char *buf, size_t size) {
+    unsigned char *encrypt_buf = NULL;
     size_t i = 0, j = 0;
     size_t output_length = ((size + 2) / 3) * 4;
 
@@ -46,8 +46,8 @@ char decLookupTable[] = {
     41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 80, 80, 80, 80, 80
 };
 
-char *decrypt_b64(char *buf, size_t size) {
-    char *decrypt_buf = NULL;
+unsigned char *decrypt_b64(unsigned char *buf, size_t size) {
+    unsigned char *decrypt_buf = NULL;
     size_t i = 0, j = 0;
     size_t output_length = (size / 4) * 3;
     char index[4];

@@ -7,7 +7,33 @@ int get_file_info(int fd, struct stat *buf) {
     return (res);
 }
 
-char *get_sym_name_64(char *buf, struct ELFheaders64 elfHeader ,struct sheaders64 *sheaders, unsigned int name) {
+char *get_sym_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,struct sheaders64 *sheaders, unsigned int name) {
+    char *str = NULL;
+    size_t offset = 0;
+    size_t i, j;
+
+    if (name == 0)
+        return (NULL);
+    i = elfHeader.e_shstrndx - 1;
+    if (sheaders[i].sh_type != 0x03)
+        return (NULL);
+
+    offset = sheaders[i].sh_offset + name;
+    j = 0;
+    while (j <= sheaders[i].sh_size) {
+        if (buf[offset + j] == 0 && j > 0)
+            break;
+        j++;
+    }
+    if (sheaders[i].sh_size <= j)
+        return (NULL);
+    str = malloc(j + 1);
+    ft_strlcpy(str, (char *)&(buf[offset]), j + 1);
+    return (str);
+}
+
+
+char *get_section_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,struct sheaders64 *sheaders, unsigned int name) {
     char *str = NULL;
     size_t offset = 0;
     size_t i, j;
@@ -28,37 +54,11 @@ char *get_sym_name_64(char *buf, struct ELFheaders64 elfHeader ,struct sheaders6
     if (sheaders[i].sh_size <= j)
         return (NULL);
     str = malloc(j + 1);
-    ft_strlcpy(str, &(buf[offset]), j + 1);
+    ft_strlcpy(str, (char *)&(buf[offset]), j + 1);
     return (str);
 }
 
-
-char *get_section_name_64(char *buf, struct ELFheaders64 elfHeader ,struct sheaders64 *sheaders, unsigned int name) {
-    char *str = NULL;
-    size_t offset = 0;
-    size_t i, j;
-
-    if (name == 0)
-        return (NULL);
-    i = elfHeader.e_shstrndx;
-    if (sheaders[i].sh_type != 0x03)
-        return (NULL);
-
-    offset = sheaders[i].sh_offset + name;
-    j = 0;
-    while (j <= sheaders[i].sh_size) {
-        if (buf[offset + j] == 0 && j > 0)
-            break;
-        j++;
-    }
-    if (sheaders[i].sh_size <= j)
-        return (NULL);
-    str = malloc(j + 1);
-    ft_strlcpy(str, &(buf[offset]), j + 1);
-    return (str);
-}
-
-struct sheaders64 *get_section_headers_64(struct ELFheaders64 elfHeader, char *buf) {
+struct sheaders64 *get_section_headers_64(struct ELFheaders64 elfHeader, unsigned char *buf) {
     struct sheaders64 *sheaders;
 
     sheaders = malloc(sizeof(struct sheaders64) * elfHeader.e_shnum);
@@ -70,7 +70,19 @@ struct sheaders64 *get_section_headers_64(struct ELFheaders64 elfHeader, char *b
     return (sheaders);
 }
 
-struct Elf64_Sym *get_syms_64(struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, char *buf, size_t *size) {
+struct pheaders64 *get_program_headers_64(struct ELFheaders64 elfHeader, unsigned char *buf) {
+    struct pheaders64 *pheaders;
+
+    pheaders = malloc(sizeof(struct pheaders64) * elfHeader.e_phnum);
+    if (!pheaders)
+        return (NULL);
+    
+    for (int i = 0; i < elfHeader.e_phnum; i++)
+        pheaders[i] = get_pHeader64_little_endian(buf, &elfHeader, i);
+    return (pheaders);
+}
+
+struct Elf64_Sym *get_syms_64(struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, unsigned char *buf, size_t *size) {
     struct Elf64_Sym *syms;
 
     for (int i = 0; i < elfHeader.e_shnum; i++) {
@@ -89,7 +101,7 @@ struct Elf64_Sym *get_syms_64(struct ELFheaders64 elfHeader, struct sheaders64 *
     return (syms);
 }
 
-struct sym_name *get_sys_tab_64(struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, char *buf, int *j) {
+struct sym_name *get_sys_tab_64(struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, unsigned char *buf, int *j) {
   struct Elf64_Sym *syms;
   size_t size = 0;
   struct sym_name *sym_tab = NULL;
@@ -116,4 +128,105 @@ struct sym_name *get_sys_tab_64(struct ELFheaders64 elfHeader, struct sheaders64
   }
   free(syms);
   return (sym_tab);
+}
+
+size_t get_section_header_offset(int index, struct ELFheaders64 file_header) {
+    size_t offset = 0;
+
+    offset = file_header.e_shoff + file_header.e_shentsize * index;
+    return (offset);
+}
+
+size_t get_program_header_offset(int index, struct ELFheaders64 file_header) {
+    size_t offset = 0;
+
+    offset = file_header.e_phoff + file_header.e_phentsize * index;
+    return (offset);
+}
+
+int get_section_index(char *section, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 file_header) {
+    int i = 0, index = -1;
+    char *name = NULL;
+
+    while(i < file_header.e_shnum) {
+        name = get_section_name_64(buf, file_header, sheaders, sheaders[i].sh_name);
+        if (name && strncmp(name, section, strlen(section)) == 0) {
+            index = i;
+        }
+        free(name);
+        i++;
+    }
+    return (index);
+}
+
+size_t get_symbol_offset(unsigned char *buf, char *sym, struct ELFheaders64 elfHeader, struct sheaders64 *sheaders) {
+    struct Elf64_Sym *syms;
+    size_t size = 0;
+    size_t offset = -1;
+    char *name;
+
+
+    syms = get_syms_64(elfHeader, sheaders, buf, &size);
+    for (size_t i = 0; i < size; i++) {
+      if ((syms[i].st_name != 0 || i == 0)) {
+        name = get_sym_name_64(buf, elfHeader, sheaders, syms[i].st_name);
+        if (name && strcmp(name, sym) == 0) {
+            offset = syms[i].st_value;
+            break;
+        }
+        free(name);
+      }
+    }
+    return (offset);
+}
+
+int get_rel_as_count(unsigned char *buf, char *section_name, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader, unsigned long size_of_struct) {
+    int nb = 0;
+
+    for (int i = 0; i < elfHeader.e_shnum; i++) {
+        char *name = get_section_name_64(buf, elfHeader, sheaders, sheaders[i].sh_name);
+        if (name && strcmp(name, section_name) == 0)
+            nb = sheaders[i].sh_size / size_of_struct;
+    }
+    return (nb);
+}
+
+
+size_t get_rel_a_offset(struct sheaders64 sheader, int i, unsigned long size_of_struct) {
+    size_t offset;
+
+    offset = sheader.sh_offset + i * size_of_struct;
+    return (offset);
+}
+
+Elf64_Rel *get_rels(unsigned char *buf, struct sheaders64 sheader) {
+    Elf64_Rel *rel;
+    int nb;
+
+    nb = sheader.sh_size / sizeof(Elf64_Rel);
+    rel = malloc(sheader.sh_size);
+    if (!rel) {
+        perror("Error get_relas:");
+        exit(1);
+    }
+    for (int i = 0; i < nb; i++)
+        rel[i] = get_rel64_little_endian(buf, sheader, 0);
+
+    return (rel);
+}
+
+Elf64_Rela *get_relas(unsigned char *buf, struct sheaders64 sheader) {
+    Elf64_Rela *rela;
+    int nb;
+
+    nb = sheader.sh_size / sizeof(Elf64_Rela);
+    rela = malloc(sheader.sh_size);
+    if (!rela) {
+        perror("Error get_relas:");
+        exit(1);
+    }
+    for (int i = 0; i < nb; i++)
+        rela[i] = get_rela64_little_endian(buf, sheader, i);
+
+    return (rela);
 }

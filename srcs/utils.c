@@ -24,7 +24,7 @@ void    sort_tab(int **tab, size_t size) {
 }
 
 void *ft_mmap(size_t lengthint, int prot, int flags, int fd, off_t offset) {
-    char *buf = NULL;
+    unsigned char *buf = NULL;
 
     buf = mmap(NULL, lengthint, prot, flags, fd, offset);
     return (buf);
@@ -37,14 +37,14 @@ int get_fd(int argc, char **argv, struct stat **buf) {
         argv[1] = "./a.out";
     fd = open_file(argv[1]);
     if (fd == -1) {
-        write(1, "Error: file opening failed\n", strlen("Error: file opening failed\n"));
+        perror("Error open:");
         return (-1);
     }
     *buf = malloc(sizeof(struct stat));
     if (*buf == NULL)
         return(-1);
     if (get_file_info(fd, *buf) == -1) {
-        write(1, "Error: fstat failed on file\n", strlen("Error: fstat failed on file\n"));
+        perror("Error fstat:");
         return (-1);
     }
     return (fd);
@@ -56,4 +56,49 @@ int memncat(void *src, size_t index, void *dst, size_t n) {
     while (++i < n)
         ((unsigned char *)src)[index + i] = ((unsigned char *)dst)[i];
     return (0);
+}
+
+int check_file(unsigned char *buf, size_t size) {
+    struct ELFheaders64 file_header;
+    unsigned int ref_bytes = 1179403647;
+
+    if(size < 0x40)
+        return (1);
+    file_header = get_elfHeader64_little_endian(buf);
+    if (file_header.ei_mag0 != ref_bytes) {
+        write(1, "Magic bytes aren't good\n", strlen("Magic bytes aren't good\n"));
+        return (1);
+    }
+    else if (file_header.ei_class != 2) {
+        write(1, "Must be a 64 bytes arch file\n", strlen("Must be a 64 bytes arch file\n"));
+        return (1);
+    }
+    else if (file_header.ei_data != 1) {
+        write(1, "Must be in little endian\n", strlen("Must be in little endian\n"));
+        return (1);
+    }
+    else if (file_header.ei_osabi != 0) {
+        write(1, "Not the good arch. Must be build for SysV\n", strlen("Not the good arch. Must be build for SysV\n"));
+        return (1);
+    }
+    return (0);
+}
+
+size_t find_opcode(unsigned char *buf, size_t size, unsigned char opcode) {
+    for (size_t i = 0; i < size; i++) {
+        dprintf(1, "code = %hhx\n", buf[i]);
+        if (buf[i] == opcode)
+            return (i);
+    }
+    return (0);
+}
+
+void additionSurOctets(unsigned char *buffer, size_t taille, unsigned int nombre) {
+    unsigned int retenue = nombre;
+    
+    for (size_t i = 0; i < taille; ++i) {
+        unsigned int somme = buffer[i] + retenue;
+        retenue = somme >> 8;
+        buffer[i] = (unsigned char)somme;
+    }
 }
