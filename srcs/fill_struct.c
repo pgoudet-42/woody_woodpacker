@@ -57,9 +57,7 @@ struct pheaders64 get_pHeader64_little_endian(unsigned char *buf, struct ELFhead
     ((unsigned long)buf[offset + 0x2c] << 32) + ((unsigned long)buf[offset + 0x2d] << 40) + ((unsigned long)buf[offset + 0x2e] << 48) + ((unsigned long)buf[offset + 0x2f] << 56); 
     pheader.p_align = ((unsigned char)buf[offset + 0x30]) + ((unsigned char)buf[offset + 0x31] << 8) + ((unsigned char)buf[offset + 0x32] << 16) + ((unsigned char)buf[offset + 0x33] << 24) +\
     ((unsigned long)buf[offset + 0x34] << 32) + ((unsigned long)buf[offset + 0x35] << 40) + ((unsigned long)buf[offset + 0x36] << 48) + ((unsigned long)buf[offset + 0x37] << 56); 
-    /*pheader.p_align = ((unsigned char)buf[offset + 0x38]) + ((unsigned char)buf[offset + 0x39] << 8) + ((unsigned char)buf[offset + 0x3a] << 16) + ((unsigned char)buf[offset + 0x3b] << 24) +\
-    ((unsigned long)buf[offset + 0x3c] << 32) + ((unsigned long)buf[offset + 0x3d] << 40) + ((unsigned long)buf[offset + 0x3e] << 48) + ((unsigned long)buf[offset + 0x3f] << 56); 
-*/
+
     return (pheader);
 }
 

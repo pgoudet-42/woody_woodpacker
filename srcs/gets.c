@@ -55,6 +55,27 @@ char *get_sym_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,struct 
     return (str);
 }
 
+char *get_sym_name_from_offset(unsigned char *buf, size_t offset, struct sheaders64 *sheaders, struct ELFheaders64 elfheader) {
+    struct Elf64_Sym *syms;
+    size_t nb;
+    size_t value = 0xFFFFFFFFFFFFFFFF;
+    int index = -1;
+
+    syms = get_syms_64(elfheader, sheaders, buf, &nb);
+    for (size_t i = 0; i < nb; i++) {
+        if (offset > syms[i].st_value + syms[i].st_size) {
+            if (offset - syms[i].st_value + syms[i].st_size < value) {
+                value = offset - syms[i].st_value + syms[i].st_size;
+                index = (int)i;
+            }
+        }
+
+    }
+    if (index == -1)
+        return (NULL);
+    return (get_sym_name_64(buf, elfheader, sheaders, syms[index].st_name));
+}
+
 
 char *get_section_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,struct sheaders64 *sheaders, unsigned int name) {
     char *str = NULL;
@@ -81,7 +102,7 @@ char *get_section_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,str
     return (str);
 }
 
-struct sheaders64 *get_section_headers_64(struct ELFheaders64 elfHeader, unsigned char *buf) {
+struct sheaders64 *get_section_headers_64(unsigned char *buf, struct ELFheaders64 elfHeader) {
     struct sheaders64 *sheaders;
 
     sheaders = malloc(sizeof(struct sheaders64) * elfHeader.e_shnum);
@@ -93,7 +114,7 @@ struct sheaders64 *get_section_headers_64(struct ELFheaders64 elfHeader, unsigne
     return (sheaders);
 }
 
-struct pheaders64 *get_program_headers_64(struct ELFheaders64 elfHeader, unsigned char *buf) {
+struct pheaders64 *get_program_headers_64( unsigned char *buf, struct ELFheaders64 elfHeader) {
     struct pheaders64 *pheaders;
 
     pheaders = malloc(sizeof(struct pheaders64) * elfHeader.e_phnum);
@@ -173,7 +194,7 @@ int get_section_index(char *section, unsigned char *buf, struct sheaders64 *shea
 
     while(i < file_header.e_shnum) {
         name = get_section_name_64(buf, file_header, sheaders, sheaders[i].sh_name);
-        if (name && strncmp(name, section, strlen(section)) == 0) {
+        if (name && strcmp(name, section) == 0) {
             index = i;
         }
         free(name);

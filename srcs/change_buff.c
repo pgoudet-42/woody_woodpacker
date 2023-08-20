@@ -13,105 +13,70 @@
 
 size_t offset_injection;
 
-void    change_entry_point(unsigned char *buf, size_t new_entry_point) {
-    buf[0x1f] = (unsigned char)(new_entry_point >> 56);
-    buf[0x1e] = (unsigned char)(new_entry_point >> 48);
-    buf[0x1d] = (unsigned char)(new_entry_point >> 40);
-    buf[0x1c] = (unsigned char)(new_entry_point >> 32);
-    buf[0x1b] = (unsigned char)(new_entry_point >> 24);
-    buf[0x1a] = (unsigned char)(new_entry_point >> 16);
-    buf[0x19] = (unsigned char)(new_entry_point >> 8);
-    buf[0x18] = (unsigned char)(new_entry_point);
+int find_offset_nentry_oentry(size_t oep, size_t nep) {
+    int offset = 0xFFFFFFFF;
+    int diff;
+
+    diff = oep < nep ? (int)(nep - oep) : (int)(oep - nep);
+    offset = offset - diff;
+    return (offset + 1);
 }
 
-unsigned char *get_new_buff(unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader, size_t file_size) {
-    unsigned char *final = NULL;
-    size_t opcode_index = 0;
-    size_t size = 0;
-    unsigned char code[] = {(unsigned char)0x90, (unsigned char)0x90, (unsigned char)0x90, (unsigned char)0x90, (unsigned char)0x90,\
-    (unsigned char)0x90, (unsigned char)0x90, (unsigned char)0x90, (unsigned char)0x90, (unsigned char)0x90, (unsigned char)0x90,\
-    (unsigned char)0x90, (unsigned char)0x90, (unsigned char)0x90, (unsigned char)0x90, (unsigned char)0x90,};
+void    cpy_mem_little(unsigned char *code, int offset) {
+    code[0] = offset >> 0;
+    code[1] = offset >> 8;
+    code[2] = offset >> 16;
+    code[3] = offset >> 24;
+}
 
-    size = calcul_file_size(buf, sheaders, elfHeader);
-    final = malloc(size);
+void    change_entry_point(unsigned char *buf, size_t new_entry_point) {
+    buf[0x1f] = new_entry_point >> 56;
+    buf[0x1e] = new_entry_point >> 48;
+    buf[0x1d] = new_entry_point >> 40;
+    buf[0x1c] = new_entry_point >> 32;
+    buf[0x1b] = new_entry_point >> 24;
+    buf[0x1a] = new_entry_point >> 16;
+    buf[0x19] = new_entry_point >> 8;
+    buf[0x18] = new_entry_point;
+}
+
+unsigned char *get_new_buff(unsigned char *buf, struct ELFheaders64 elfHeader, size_t file_size) {
+    int offset;
+    unsigned char *final = NULL;
+    unsigned char code[] = {0x90U, 0x90U, 0x90U, 0x90U, 0x90U,\
+                            0x90U, 0x90U, 0x90U, 0x90U, 0x90U, 0x90U,\
+                            0xE9U, 0xFFU, 0xFFU, 0xFFU, 0xFFU};
+
+    offset_injection = 0x000000000000115d;
+    offset = find_offset_nentry_oentry(elfHeader.e_entry, 0x115dUL + CODE_SIZE);
+    cpy_mem_little(&(code[CODE_SIZE - 4]), offset);
+
+    final = malloc(file_size);
     if (!final)
         return (NULL);
-    offset_injection = get_symbol_offset(buf, SYMBOL, elfHeader, sheaders);
-
-    opcode_index = 2;
-    if (opcode_index == 0 || offset_injection == (size_t)-1) {
-        printf("Error: opcode or symbol not found\n");
-        exit(1);
-    }
-    memncat(final, 0, buf, offset_injection + opcode_index);
-    memncat(final, offset_injection + opcode_index, code, CODE_SIZE);
-    memncat(final, offset_injection + opcode_index + CODE_SIZE, &(buf[offset_injection + opcode_index]), file_size - offset_injection - opcode_index);
-    // change_entry_point(final, offset + opcode_index);
+    memncat(final, 0, buf, offset_injection);
+    memncat(final, offset_injection, code, CODE_SIZE);
+    memncat(final, offset_injection + CODE_SIZE, &(buf[offset_injection + CODE_SIZE]), file_size - offset_injection - CODE_SIZE);
+    change_entry_point(final, offset_injection);
     return (final);
 }
 
-void change_rel_offset(unsigned char *buf, struct sheaders64 sheader, Elf64_Rel *rels) {
-    int nb = 0;
-    size_t offset;
 
-    nb = sheader.sh_size / sizeof(Elf64_Rel);
-    for (int j = 0; j < nb; j++) {
-        offset = get_rel_a_offset(sheader, j, sizeof(Elf64_Rel));
-        if (rels[j].r_offset > offset_injection)
-            additionSurOctets(&(buf[offset]), 8, CODE_SIZE);
-        rels[j] = get_rel64_little_endian(buf, sheader, j);
-    }
-}
-
-void change_rela_offset(unsigned char *buf, struct sheaders64 sheader, Elf64_Rela *relas) {
-    int nb = 0;
-    size_t offset;
-
-    nb = sheader.sh_size / sizeof(Elf64_Rela);
-    for (int j = 0; j < nb; j++) {
-        offset = get_rel_a_offset(sheader, j, sizeof(Elf64_Rela));
-        if (relas[j].r_offset > offset_injection)
-            additionSurOctets(&(buf[offset]), 8, CODE_SIZE);
-        relas[j] = get_rela64_little_endian(buf, sheader, j);
-    }
-}
-
-void     change_rela(unsigned char *buf,struct sheaders64 *sheaders, struct ELFheaders64 elfHeader) {
-    char **rela_names;
-    char **rel_names;
-    Elf64_Rela *relas;
-    Elf64_Rel *rels;
-
-    rel_names = get_rel_sections_names(buf, sheaders, elfHeader);
-    rela_names = get_rela_sections_names(buf, sheaders, elfHeader);
-
-    for (int i = 0; i < elfHeader.e_shnum; i++) {
-        char *name = get_section_name_64(buf, elfHeader, sheaders, sheaders[i].sh_name);
-        if (ft_contains(name, rela_names) != -1){
-            relas = get_relas(buf, sheaders[i]);
-            change_rela_offset(buf, sheaders[i], relas);
-            
-        }
-        else if (ft_contains(name, rel_names) != -1) {
-            rels = get_rels(buf, sheaders[i]);
-            change_rel_offset(buf, sheaders[i], rels);
-        }
-    }
-}
-
-unsigned char *change_buffer(unsigned char *buf, struct sheaders64 *sheaders, int section_index, struct ELFheaders64 elfHeader, size_t file_size) {
+unsigned char *change_buffer(unsigned char *buf, struct ELFheaders64 elfHeader, size_t file_size) {
     struct pheaders64 *pheaders;
+    struct sheaders64 *sheaders;
+    char *sym_name;
 
-    pheaders = get_program_headers_64(elfHeader, buf);
-    buf = get_new_buff(buf, sheaders, elfHeader, file_size);
-    change_file_header(buf, &elfHeader, sheaders[section_index]);
+    pheaders = get_program_headers_64(buf, elfHeader);
+    buf = get_new_buff(buf, elfHeader, file_size);
+    elfHeader = get_elfHeader64_little_endian(buf);
     change_program_header(buf, pheaders, elfHeader);
 
-    elfHeader = get_elfHeader64_little_endian(buf);
-    change_sections_header_offset(buf, section_index, elfHeader);
-    sheaders = get_section_headers_64(elfHeader, buf);
-    change_symbole_size(SYMBOL, section_index, buf, sheaders, elfHeader);
-    change_rela(buf, sheaders, elfHeader);
-    // change_dynamic_offset(buf, sheaders, elfHeader);
+    change_sections_header_offset(buf, elfHeader);
+    sheaders = get_section_headers_64(buf, elfHeader);
+    sym_name = get_sym_name_from_offset(buf, offset_injection, sheaders, elfHeader);
+    if (sym_name)
+        change_symbole_size(sym_name, buf, sheaders, elfHeader);
+    free(sym_name);
     return (buf);
 }

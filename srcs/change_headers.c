@@ -19,52 +19,35 @@ void    change_program_offset(unsigned char *buf, struct ELFheaders64 file_heade
     }
 }
 
-void    change_program_header_offsets(unsigned char *buf, int ph_index, struct ELFheaders64 file_header, unsigned char is_exec_seg, struct pheaders64 *pheaders) {
+void    change_program_header_offsets(unsigned char *buf, int ph_index, struct ELFheaders64 file_header) {
     size_t offset;
-    unsigned long int align = 0;
 
     offset = get_program_header_offset(ph_index, file_header);
-    if (pheaders[ph_index].p_offset > file_header.e_entry || is_exec_seg) {
-        if (is_exec_seg) {
-            additionSurOctets(&(buf[offset + 0x20]), 8, CODE_SIZE);
-            additionSurOctets(&(buf[offset + 0x28]), 8, CODE_SIZE);
-        }
-        else {
-            additionSurOctets(&(buf[offset + 0x08]), 8, CODE_SIZE);
-            additionSurOctets(&(buf[offset + 0x10]), 8, CODE_SIZE);
-            additionSurOctets(&(buf[offset + 0x18]), 8, CODE_SIZE);
-        }
-        align = find_p_align(pheaders[ph_index]);
-        memcpy(&(buf[offset + 0x30]), &align, 8);
-    }
+    additionSurOctets(&(buf[offset + 0x20]), 8, CODE_SIZE);
+    additionSurOctets(&(buf[offset + 0x28]), 8, CODE_SIZE);
 }
 
 void    change_program_header(unsigned char *buf, struct pheaders64 *pheaders, struct ELFheaders64 elfHeader) {
-    unsigned char is_exec_seg = 0;        
     
     for (int i = 0; i < elfHeader.e_phnum; i++) {
         if (pheaders[i].p_type == 0x00000001) {
-            if (elfHeader.e_entry >= pheaders[i].p_vaddr && elfHeader.e_entry < (pheaders[i].p_vaddr + pheaders[i].p_memsz)) {
+            if (elfHeader.e_entry == (pheaders[i].p_vaddr + pheaders[i].p_memsz)) {
                 if (pheaders[i].p_flags & 0x01)
-                    is_exec_seg = 1;
+                    change_program_header_offsets(buf, i, elfHeader);
             }
         }
-        change_program_header_offsets(buf, i, elfHeader, is_exec_seg, pheaders);
-        is_exec_seg = 0;
     }
 }
 
-void    change_sections_header_offset(unsigned char *buf, int section_index, struct ELFheaders64 file_header) {
+void    change_sections_header_offset(unsigned char *buf, struct ELFheaders64 elfheader) {
     size_t offset = 0;
+    struct sheaders64 *sheaders;
 
-    for (int i = section_index; i < file_header.e_shnum; i++) {
-        offset = get_section_header_offset(i, file_header);
-        if (i == section_index) {
+    sheaders = get_section_headers_64(buf, elfheader);
+
+    for (int i = 0; i < elfheader.e_shnum; i++) {
+        offset = get_section_header_offset(i, elfheader);
+        if (sheaders[i].sh_offset + sheaders[i].sh_size == offset_injection)
             additionSurOctets(&(buf[offset + 0x20]), 8, CODE_SIZE);
-        }
-        else {
-            additionSurOctets(&(buf[offset + 0x10]), 8, CODE_SIZE);
-            additionSurOctets(&(buf[offset + 0x18]), 8, CODE_SIZE);
-        }
     }
 }

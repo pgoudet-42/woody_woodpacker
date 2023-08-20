@@ -12,8 +12,8 @@
 #define WOODY_H
 
 #define CODE_SIZE 16
-#define SYMBOL "_start"
-#define SECTION ".text"
+// #define SYMBOL "_fini"
+// #define SECTION ".fini"
 
 struct ELFheaders64 {
     unsigned int ei_mag0;
@@ -116,11 +116,12 @@ void                print_Elf64_Dyn(Elf64_Dyn dyn);
 int                 get_file_info(int fd, struct stat *buf);
 char                *get_dynsym_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,struct sheaders64 *sheaders, unsigned int name);
 char                *get_sym_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,struct sheaders64 *sheaders, unsigned int name);
+char                *get_sym_name_from_offset(unsigned char *buf, size_t offset, struct sheaders64 *sheaders, struct ELFheaders64 elfheader);
 char                *get_section_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,struct sheaders64 *sheaders, unsigned int name);
-struct sheaders64   *get_section_headers_64(struct ELFheaders64 elfHeader, unsigned char *buf);
+struct sheaders64   *get_section_headers_64(unsigned char *buf, struct ELFheaders64 elfHeader);
 struct Elf64_Sym    *get_syms_64(struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, unsigned char *buf, size_t *size);
 struct sym_name     *get_sys_tab_64(struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, unsigned char *buf, int *j);
-struct pheaders64   *get_program_headers_64(struct ELFheaders64 elfHeader, unsigned char *buf);
+struct pheaders64   *get_program_headers_64(unsigned char *buf, struct ELFheaders64 elfHeader);
 int                 get_section_index(char *section, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 file_header);
 size_t              get_program_header_offset(int index, struct ELFheaders64 file_header);
 size_t              get_section_header_offset(int index, struct ELFheaders64 file_header);
@@ -146,33 +147,38 @@ void                *ft_mmap(size_t lengthint, int prot, int flags, int fd, off_
 int                 get_fd(int argc, char **argv, struct stat **buf);
 int                 memncat(void *src, size_t index, void *dst, size_t n);
 int                 check_file(unsigned char *buf, size_t size);
-size_t              find_opcode(unsigned char *buf, size_t size, unsigned char opcode);
+size_t              find_opcode(unsigned char *buf, size_t size, unsigned char *opcodes, size_t size_opcodes);
 void                additionSurOctets(unsigned char *buffer, size_t taille, unsigned int nombre);
+int                 is_in_luint_table(long unsigned int wanted, long unsigned int *table, size_t size);
 
 unsigned char       *encrypt_b64(unsigned char *buf, size_t size);
 unsigned char       *decrypt_b64(unsigned char *buf, size_t size);
 
-struct crypt_res    *crypt_xor(unsigned char *buf, size_t len);
-struct crypt_res    *decrypt_xor(struct crypt_res *ptr);
+char                *generate_random_key(size_t len);
+void                apply_xor(unsigned char *buf, size_t len, char *key);
+
 
 int                 write_file(unsigned char *buf, size_t size);
 
-unsigned char       *change_buffer(unsigned char *buf, struct sheaders64 *section_hd, int section_index, struct ELFheaders64 file_header, size_t file_size);
+unsigned char       *change_buffer(unsigned char *buf, struct ELFheaders64 file_header, size_t file_size);
 int                 get_section_index(char *section, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 file_header);
 
-void                change_symbole_size(char *sym, int section_index, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
+void                change_symbole_size(char *sym, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
 
 size_t              calcul_file_size(unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
 unsigned long int   find_p_align(struct pheaders64 ph);
 
-void                change_sections_header_offset(unsigned char *buf, int section_index, struct ELFheaders64 file_header);
+void                change_sections_header_offset(unsigned char *buf, struct ELFheaders64 elfheader);
 void                change_program_header(unsigned char *buf, struct pheaders64 *pheaders, struct ELFheaders64 elfHeader);
 void                change_program_offset(unsigned char *buf, struct ELFheaders64 file_header);
 void                change_file_header(unsigned char *buf, struct ELFheaders64 *file_header, struct sheaders64 section_hd);
 
 char                **get_rel_sections_names(unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
 char                **get_rela_sections_names(unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
-
+void                change_rela_offset(unsigned char *buf, struct sheaders64 sheader, Elf64_Rela *relas);
+void                change_rel_offset(unsigned char *buf, struct sheaders64 sheader, Elf64_Rel *rels);
 
 void                change_dynamic_offset(unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
+
+char                *create_code(char *key);
 #endif

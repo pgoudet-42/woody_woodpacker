@@ -84,11 +84,16 @@ int check_file(unsigned char *buf, size_t size) {
     return (0);
 }
 
-size_t find_opcode(unsigned char *buf, size_t size, unsigned char opcode) {
+size_t find_opcode(unsigned char *buf, size_t size, unsigned char *opcodes, size_t size_opcodes) {
+    size_t j = 0;
+
     for (size_t i = 0; i < size; i++) {
-        dprintf(1, "code = %hhx\n", buf[i]);
-        if (buf[i] == opcode)
-            return (i);
+        if (buf[i] == opcodes[0]) {
+            while (j < size_opcodes && buf[i + j] == opcodes[j])
+                j++;
+            if (j == size_opcodes)
+                return (i);
+        }
     }
     return (0);
 }
@@ -101,4 +106,11 @@ void additionSurOctets(unsigned char *buffer, size_t taille, unsigned int nombre
         retenue = somme >> 8;
         buffer[i] = (unsigned char)somme;
     }
+}
+
+int is_in_luint_table(long unsigned int wanted, long unsigned int *table, size_t size) {
+    for (size_t i = 0; i < size; i++)
+        if (table[i] == wanted)
+            return (1);
+    return (0);
 }

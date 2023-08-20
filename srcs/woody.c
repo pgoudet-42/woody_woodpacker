@@ -1,22 +1,39 @@
 #include "../include/woody.h"
 
 
-int woody(unsigned char *buf, size_t size) {
-    struct ELFheaders64 file_header;
-    struct sheaders64 *sheaders;
-    int section_index = 0;
 
-    file_header = get_elfHeader64_little_endian(buf);
-    sheaders = get_section_headers_64(file_header, buf);
-    if (!sheaders)
-        return (1);
-    section_index = get_section_index(SECTION, buf, sheaders, file_header);
-    if (section_index == -1) {
-        write(1, "Error: section not found\n", strlen("Error: section not found\n"));
-        free(sheaders);
-        return (1);
+void find_offset_injection(unsigned char *buf, struct ELFheaders64 elfheader) {
+    size_t diff;
+    struct pheaders64 *pheaders;
+
+    pheaders = get_program_headers_64(buf, elfheader);
+    for (int i = 0; i < elfheader.e_phnum - 1; i++) {
+        diff = (pheaders[i].p_offset + pheaders[i].p_memsz) - pheaders[i + 1].p_offset;
+        if ((pheaders[i].p_flags & 0x01) != 0 && diff > CODE_SIZE) {
+            offset_injection = pheaders[i].p_offset + pheaders[i].p_memsz;
+            printf("offset injection: %lx\n", offset_injection);
+        }
     }
-    buf = change_buffer(buf, sheaders, section_index, file_header, size);
+    
+}
+
+int woody(unsigned char *buf, size_t size) {
+    struct ELFheaders64 elfheader;
+    char *key, *code;
+    int section_index;
+    struct sheaders64 *sheaders;
+
+    elfheader = get_elfHeader64_little_endian(buf);
+    sheaders = get_section_headers_64(buf, elfheader);
+    section_index = get_section_index(".text", buf, sheaders, elfheader);
+    key = generate_random_key(sheaders[section_index].sh_size);
+    printf("Xor key: %s\n", key);
+
+
+    find_offset_injection(buf, elfheader);
+    buf = change_buffer(buf, elfheader, size);
+    apply_xor(&(buf[sheaders[section_index].sh_offset]), sheaders[section_index].sh_size, key);
+
     write_file(buf, size + CODE_SIZE);
     return (0);
 }
