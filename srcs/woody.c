@@ -19,7 +19,7 @@ void find_offset_injection(unsigned char *buf, struct ELFheaders64 elfheader) {
 
 int woody(unsigned char *buf, size_t size) {
     struct ELFheaders64 elfheader;
-    char *key, *code;
+    char *key;
     int section_index;
     struct sheaders64 *sheaders;
 

@@ -1,0 +1,44 @@
+
+test:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000401020 <_start>:
+  401020:	48 31 ed             	xor    %rbp,%rbp
+  401023:	48 83 ec 20          	sub    $0x20,%rsp
+  401027:	c6 04 24 60          	movb   $0x60,(%rsp)
+  40102b:	c6 44 24 01 61       	movb   $0x61,0x1(%rsp)
+  401030:	c6 44 24 02 62       	movb   $0x62,0x2(%rsp)
+  401035:	c6 44 24 03 63       	movb   $0x63,0x3(%rsp)
+  40103a:	c6 44 24 04 64       	movb   $0x64,0x4(%rsp)
+  40103f:	c6 44 24 05 65       	movb   $0x65,0x5(%rsp)
+  401044:	c6 44 24 06 66       	movb   $0x66,0x6(%rsp)
+  401049:	c6 44 24 07 67       	movb   $0x67,0x7(%rsp)
+  40104e:	c6 44 24 08 68       	movb   $0x68,0x8(%rsp)
+  401053:	c6 44 24 09 69       	movb   $0x69,0x9(%rsp)
+  401058:	c6 44 24 0a 6a       	movb   $0x6a,0xa(%rsp)
+  40105d:	c6 44 24 0b 6b       	movb   $0x6b,0xb(%rsp)
+  401062:	c6 44 24 0c 6c       	movb   $0x6c,0xc(%rsp)
+  401067:	c6 44 24 0d 6d       	movb   $0x6d,0xd(%rsp)
+  40106c:	c6 44 24 0e 6e       	movb   $0x6e,0xe(%rsp)
+  401071:	c6 44 24 0f 6f       	movb   $0x6f,0xf(%rsp)
+  401076:	c6 44 24 10 70       	movb   $0x70,0x10(%rsp)
+  40107b:	66 c7 44 24 1d 0f 00 	movw   $0xf,0x1d(%rsp)
+  401082:	4c 8b 44 24 1d       	mov    0x1d(%rsp),%r8
+  401087:	49 81 e0 ff 00 00 00 	and    $0xff,%r8
+  40108e:	b8 00 00 00 00       	mov    $0x0,%eax
+  401093:	bf 01 00 00 00       	mov    $0x1,%edi
+  401098:	48 8d 34 25 20 30 40 	lea    0x403020,%rsi
+  40109f:	00 
+  4010a0:	4a 8b 14 04          	mov    (%rsp,%r8,1),%rdx
+  4010a4:	e8 67 ff ff ff       	call   401010 <dprintf@plt>
+  4010a9:	66 83 6c 24 1d 01    	subw   $0x1,0x1d(%rsp)
+  4010af:	66 83 7c 24 1d 00    	cmpw   $0x0,0x1d(%rsp)
+  4010b5:	7f cb                	jg     401082 <_start+0x62>
+
+00000000004010b7 <_exit>:
+  4010b7:	48 83 c4 20          	add    $0x20,%rsp
+  4010bb:	b8 3c 00 00 00       	mov    $0x3c,%eax
+  4010c0:	48 31 ff             	xor    %rdi,%rdi
+  4010c3:	0f 05                	syscall 

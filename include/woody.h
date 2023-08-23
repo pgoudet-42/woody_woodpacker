@@ -11,7 +11,7 @@
 #ifndef WOODY_H
 #define WOODY_H
 
-#define CODE_SIZE 16
+#define CODE_SIZE 156
 // #define SYMBOL "_fini"
 // #define SECTION ".fini"
 
@@ -100,6 +100,7 @@ typedef struct {
 } Elf64_Dyn;
 
 extern size_t offset_injection;
+extern unsigned char code[];
 
 char                *toBinary(int n, int len);
 void                ft_print_stat(struct stat *buf);
@@ -180,5 +181,6 @@ void                change_rel_offset(unsigned char *buf, struct sheaders64 shea
 
 void                change_dynamic_offset(unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
 
-char                *create_code(char *key);
+unsigned char *create_code();
+
 #endif

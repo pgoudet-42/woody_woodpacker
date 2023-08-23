@@ -43,9 +43,7 @@ void    change_entry_point(unsigned char *buf, size_t new_entry_point) {
 unsigned char *get_new_buff(unsigned char *buf, struct ELFheaders64 elfHeader, size_t file_size) {
     int offset;
     unsigned char *final = NULL;
-    unsigned char code[] = {0x90U, 0x90U, 0x90U, 0x90U, 0x90U,\
-                            0x90U, 0x90U, 0x90U, 0x90U, 0x90U, 0x90U,\
-                            0xE9U, 0xFFU, 0xFFU, 0xFFU, 0xFFU};
+    // unsigned char code[] = create_code();
 
     offset_injection = 0x000000000000115d;
     offset = find_offset_nentry_oentry(elfHeader.e_entry, 0x115dUL + CODE_SIZE);
