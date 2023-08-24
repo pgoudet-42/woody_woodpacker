@@ -1,17 +1,5 @@
 #include "../include/woody.h"
 
-#define NAME 0
-#define TYPE 4
-#define FLAGS 8
-#define ADDR 16
-#define OFFSET 24
-#define SIZE 32
-#define LINK 36
-#define INFO 40
-#define ALIGN 48
-#define ENTSIZE 56
-
-size_t offset_injection;
 
 int find_offset_nentry_oentry(size_t oep, size_t nep) {
     int offset = 0xFFFFFFFF;
@@ -40,41 +28,40 @@ void    change_entry_point(unsigned char *buf, size_t new_entry_point) {
     buf[0x18] = new_entry_point;
 }
 
-unsigned char *get_new_buff(unsigned char *buf, struct ELFheaders64 elfHeader, size_t file_size) {
+unsigned char *get_new_buff(struct code code, unsigned char *buf, struct ELFheaders64 elfHeader, size_t file_size) {
     int offset;
     unsigned char *final = NULL;
-    // unsigned char code[] = create_code();
 
-    offset_injection = 0x000000000000115d;
-    offset = find_offset_nentry_oentry(elfHeader.e_entry, 0x115dUL + CODE_SIZE);
-    cpy_mem_little(&(code[CODE_SIZE - 4]), offset);
+    offset = find_offset_nentry_oentry(elfHeader.e_entry, code.offset_injection + code.key_size + code.code_size);
+    cpy_mem_little(&(code.code[code.code_size - 4]), offset);
 
     final = malloc(file_size);
     if (!final)
         return (NULL);
-    memncat(final, 0, buf, offset_injection);
-    memncat(final, offset_injection, code, CODE_SIZE);
-    memncat(final, offset_injection + CODE_SIZE, &(buf[offset_injection + CODE_SIZE]), file_size - offset_injection - CODE_SIZE);
-    change_entry_point(final, offset_injection);
+    memncat(final, 0, buf, code.offset_injection);
+    memncat(final, code.offset_injection, code.key, code.key_size);
+    memncat(final, code.offset_injection + code.key_size, code.code, code.code_size);
+    memncat(final, code.offset_injection + code.key_size + code.code_size, &(buf[code.offset_injection + code.code_size + code.key_size]), file_size - code.offset_injection - code.code_size -code.key_size);
+    change_entry_point(final, code.offset_injection + code.key_size);
     return (final);
 }
 
 
-unsigned char *change_buffer(unsigned char *buf, struct ELFheaders64 elfHeader, size_t file_size) {
+unsigned char *change_buffer(struct code code, unsigned char *buf, struct ELFheaders64 elfHeader, size_t file_size) {
     struct pheaders64 *pheaders;
     struct sheaders64 *sheaders;
     char *sym_name;
 
     pheaders = get_program_headers_64(buf, elfHeader);
-    buf = get_new_buff(buf, elfHeader, file_size);
+    buf = get_new_buff(code, buf, elfHeader, file_size);
     elfHeader = get_elfHeader64_little_endian(buf);
-    change_program_header(buf, pheaders, elfHeader);
+    change_program_header(code.key_size + code.code_size, buf, pheaders, elfHeader);
 
-    change_sections_header_offset(buf, elfHeader);
+    change_sections_header_offset(code.key_size + code.code_size, code.offset_injection, buf, elfHeader);
     sheaders = get_section_headers_64(buf, elfHeader);
-    sym_name = get_sym_name_from_offset(buf, offset_injection, sheaders, elfHeader);
+    sym_name = get_sym_name_from_offset(buf, code.offset_injection, sheaders, elfHeader);
     if (sym_name)
-        change_symbole_size(sym_name, buf, sheaders, elfHeader);
+        change_symbole_size(code.offset_injection, code.key_size + code.code_size, sym_name, buf);
     free(sym_name);
     return (buf);
 }

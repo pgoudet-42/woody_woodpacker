@@ -1,0 +1,25 @@
+
+woody:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000001050 <_start>:
+    1050:	73 d2                	jae    1024 <_init+0x24>
+    1052:	23 d3                	and    edx,ebx
+    1054:	89 3a                	mov    DWORD PTR [rdx],edi
+    1056:	7b de                	jnp    1036 <puts@plt+0x6>
+    1058:	b6 7a                	mov    dh,0x7a
+    105a:	f4                   	hlt    
+    105b:	a2 c3 24 79 32 72 85 	movabs ds:0x9e7e8572327924c3,al
+    1062:	7e 9e 
+    1064:	02 e4                	add    ah,ah
+    1066:	49 a8 6f             	rex.WB test al,0x6f
+    1069:	77 51                	ja     10bc <register_tm_clones+0xc>
+    106b:	cb                   	retf   
+    106c:	53                   	push   rbx
+    106d:	23 5d 3f             	and    ebx,DWORD PTR [rbp+0x3f]
+    1070:	6b f4 66             	imul   esi,esp,0x66
+    1073:	2e 0f 1f 84 00 00 00 	cs nop DWORD PTR [rax+rax*1+0x0]
+    107a:	00 00 
+    107c:	0f 1f 40 00          	nop    DWORD PTR [rax+0x0]

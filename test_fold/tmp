@@ -1,0 +1,25 @@
+
+test:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000401000 <_start>:
+  401000:	90                   	nop
+  401001:	90                   	nop
+  401002:	48 31 ed             	xor    %rbp,%rbp
+  401005:	48 83 ec 20          	sub    $0x20,%rsp
+  401009:	66 c7 44 24 1d 0f 00 	movw   $0xf,0x1d(%rsp)
+  401010:	48 8b 7c 24 1d       	mov    0x1d(%rsp),%rdi
+  401015:	48 81 e7 ff 00 00 00 	and    $0xff,%rdi
+  40101c:	48 ff c7             	inc    %rdi
+  40101f:	48 8b 74 24 1d       	mov    0x1d(%rsp),%rsi
+  401024:	48 81 e6 ff 00 00 00 	and    $0xff,%rsi
+  40102b:	48 8b 3c 3c          	mov    (%rsp,%rdi,1),%rdi
+  40102f:	48 81 e7 ff 00 00 00 	and    $0xff,%rdi
+  401036:	48 8b 34 34          	mov    (%rsp,%rsi,1),%rsi
+  40103a:	48 81 e6 ff 00 00 00 	and    $0xff,%rsi
+  401041:	48 31 fe             	xor    %rdi,%rsi
+  401044:	66 83 6c 24 1d 01    	subw   $0x1,0x1d(%rsp)
+  40104a:	66 83 7c 24 1d 01    	cmpw   $0x1,0x1d(%rsp)
+  401050:	7f bd                	jg     40100f <_start+0xf>

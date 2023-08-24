@@ -1,6 +1,7 @@
 #include "../include/woody.h"
 
 
+struct code glob_code;
 
 void find_offset_injection(unsigned char *buf, struct ELFheaders64 elfheader) {
     size_t diff;
@@ -9,9 +10,9 @@ void find_offset_injection(unsigned char *buf, struct ELFheaders64 elfheader) {
     pheaders = get_program_headers_64(buf, elfheader);
     for (int i = 0; i < elfheader.e_phnum - 1; i++) {
         diff = (pheaders[i].p_offset + pheaders[i].p_memsz) - pheaders[i + 1].p_offset;
-        if ((pheaders[i].p_flags & 0x01) != 0 && diff > CODE_SIZE) {
-            offset_injection = pheaders[i].p_offset + pheaders[i].p_memsz;
-            printf("offset injection: %lx\n", offset_injection);
+        if ((pheaders[i].p_flags & 0x01) != 0 && diff > glob_code.code_size) {
+            glob_code.offset_injection = pheaders[i].p_offset + pheaders[i].p_memsz;
+            printf("offset injection: %lx\n", glob_code.offset_injection);
         }
     }
     
@@ -19,22 +20,25 @@ void find_offset_injection(unsigned char *buf, struct ELFheaders64 elfheader) {
 
 int woody(unsigned char *buf, size_t size) {
     struct ELFheaders64 elfheader;
-    char *key;
-    int section_index;
     struct sheaders64 *sheaders;
+    struct Elf64_Sym sym;
+    
+    
 
     elfheader = get_elfHeader64_little_endian(buf);
     sheaders = get_section_headers_64(buf, elfheader);
-    section_index = get_section_index(".text", buf, sheaders, elfheader);
-    key = generate_random_key(sheaders[section_index].sh_size);
-    printf("Xor key: %s\n", key);
-
+    sym = get_sym_by_name("_start", buf, sheaders, elfheader);
+    glob_code.key = generate_random_key(sym.st_size);
+    glob_code.key_size = sym.st_size;
+    glob_code.code = get_code(&glob_code.code_size);
+    printf("key: %s\n", (char *)glob_code.key);
+    printf("key size: %lx\n", glob_code.key_size);
+    printf("Code size: %lx\n", glob_code.code_size);
 
     find_offset_injection(buf, elfheader);
-    buf = change_buffer(buf, elfheader, size);
-    apply_xor(&(buf[sheaders[section_index].sh_offset]), sheaders[section_index].sh_size, key);
-
-    write_file(buf, size + CODE_SIZE);
+    buf = change_buffer(glob_code, buf, elfheader, size);
+    apply_xor(&(buf[sym.st_value]), glob_code.key_size, (char *)glob_code.key);
+    write_file(buf, size + glob_code.code_size);
     return (0);
 }
 

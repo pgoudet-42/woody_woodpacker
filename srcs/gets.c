@@ -224,6 +224,28 @@ size_t get_symbol_offset(unsigned char *buf, char *sym, struct ELFheaders64 elfH
     return (offset);
 }
 
+struct Elf64_Sym get_sym_by_name(char *name, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfheader) {
+    struct Elf64_Sym *syms;
+    size_t size;
+    char *sym_name;
+    struct Elf64_Sym sym;
+
+    memset(&sym, 0, sizeof(struct Elf64_Sym));
+    syms = get_syms_64(elfheader, sheaders, buf, &size);
+    for (size_t i = 0; i < size; i++ ) {
+        sym_name = get_sym_name_64(buf, elfheader, sheaders, syms[i].st_name);
+        if (sym_name && strcmp(sym_name, name) == 0) {
+            sym = syms[i];
+            free(syms);
+            free(sym_name);
+            return (sym);
+        }
+        free(sym_name);
+    }
+    free(syms);
+    return (sym);
+}
+
 int get_rel_as_count(unsigned char *buf, char *section_name, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader, unsigned long size_of_struct) {
     int nb = 0;
 

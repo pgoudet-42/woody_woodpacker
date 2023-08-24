@@ -1,8 +1,8 @@
 #include "../include/woody.h"
 
-char *generate_random_key(size_t len) {
+unsigned char *generate_random_key(size_t len) {
     const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789,.-#'?!";
-    char *str = NULL;
+    unsigned char *str = NULL;
 
     str = malloc(len);
     if (!str)
@@ -11,7 +11,7 @@ char *generate_random_key(size_t len) {
         --len;
         for (size_t n = 0; n < len; n++) {
             int key = rand() % (int) (sizeof charset - 1);
-            str[n] = charset[key];
+            str[n] = (unsigned char)(charset[key]);
         }
         str[len] = '\0';
     }

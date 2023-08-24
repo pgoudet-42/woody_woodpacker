@@ -11,9 +11,10 @@
 #ifndef WOODY_H
 #define WOODY_H
 
-#define CODE_SIZE 156
-// #define SYMBOL "_fini"
-// #define SECTION ".fini"
+
+// extern size_t offset_injection;
+extern unsigned char code[];
+// extern size_t CODE_SIZE;
 
 struct ELFheaders64 {
     unsigned int ei_mag0;
@@ -99,8 +100,16 @@ typedef struct {
         long unsigned int d_un;
 } Elf64_Dyn;
 
-extern size_t offset_injection;
-extern unsigned char code[];
+struct code {
+    size_t offset_injection;
+    size_t key_size;
+    unsigned char *key;
+    size_t code_size;
+    unsigned char *code;
+};
+
+extern struct code glob_code;
+
 
 char                *toBinary(int n, int len);
 void                ft_print_stat(struct stat *buf);
@@ -121,6 +130,7 @@ char                *get_sym_name_from_offset(unsigned char *buf, size_t offset,
 char                *get_section_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,struct sheaders64 *sheaders, unsigned int name);
 struct sheaders64   *get_section_headers_64(unsigned char *buf, struct ELFheaders64 elfHeader);
 struct Elf64_Sym    *get_syms_64(struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, unsigned char *buf, size_t *size);
+struct Elf64_Sym    get_sym_by_name(char *name, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfheader);
 struct sym_name     *get_sys_tab_64(struct ELFheaders64 elfHeader, struct sheaders64 *sheaders, unsigned char *buf, int *j);
 struct pheaders64   *get_program_headers_64(unsigned char *buf, struct ELFheaders64 elfHeader);
 int                 get_section_index(char *section, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 file_header);
@@ -155,24 +165,24 @@ int                 is_in_luint_table(long unsigned int wanted, long unsigned in
 unsigned char       *encrypt_b64(unsigned char *buf, size_t size);
 unsigned char       *decrypt_b64(unsigned char *buf, size_t size);
 
-char                *generate_random_key(size_t len);
+unsigned char       *generate_random_key(size_t len);
 void                apply_xor(unsigned char *buf, size_t len, char *key);
 
 
 int                 write_file(unsigned char *buf, size_t size);
 
-unsigned char       *change_buffer(unsigned char *buf, struct ELFheaders64 file_header, size_t file_size);
+unsigned char       *change_buffer(struct code code, unsigned char *buf, struct ELFheaders64 file_header, size_t file_size);
 int                 get_section_index(char *section, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 file_header);
 
-void                change_symbole_size(char *sym, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
+void                change_symbole_size(size_t offset_injection, size_t code_size, char *sym, unsigned char *buf);
 
-size_t              calcul_file_size(unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
+size_t              calcul_file_size(size_t code_size, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
 unsigned long int   find_p_align(struct pheaders64 ph);
 
-void                change_sections_header_offset(unsigned char *buf, struct ELFheaders64 elfheader);
-void                change_program_header(unsigned char *buf, struct pheaders64 *pheaders, struct ELFheaders64 elfHeader);
-void                change_program_offset(unsigned char *buf, struct ELFheaders64 file_header);
-void                change_file_header(unsigned char *buf, struct ELFheaders64 *file_header, struct sheaders64 section_hd);
+void                change_sections_header_offset(size_t size, size_t offset_injection, unsigned char *buf, struct ELFheaders64 elfheader);
+void                change_program_header(size_t size, unsigned char *buf, struct pheaders64 *pheaders, struct ELFheaders64 elfHeader);
+void                change_program_offset(size_t size, unsigned char *buf, struct ELFheaders64 file_header);
+void                change_file_header(size_t size, unsigned char *buf, struct ELFheaders64 *file_header, struct sheaders64 section_hd);
 
 char                **get_rel_sections_names(unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
 char                **get_rela_sections_names(unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
@@ -181,6 +191,6 @@ void                change_rel_offset(unsigned char *buf, struct sheaders64 shea
 
 void                change_dynamic_offset(unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
 
-unsigned char *create_code();
+unsigned char       *get_code(size_t *size);
 
 #endif

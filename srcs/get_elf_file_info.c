@@ -1,7 +1,7 @@
 #include "../include/woody.h"
 
 
-size_t calcul_file_size(unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader) {
+size_t calcul_file_size(size_t code_size, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader) {
     size_t final_size;
     size_t size = 0;
     struct Elf64_Sym *syms;
@@ -16,7 +16,7 @@ size_t calcul_file_size(unsigned char *buf, struct sheaders64 *sheaders, struct 
         if (syms[i].st_value > final_size)
             final_size = syms[i].st_value + syms[i].st_size;
     }
-    final_size += CODE_SIZE;
+    final_size += code_size;
     return (final_size);
 }
 
