@@ -1,3 +1,5 @@
+
+
 import sys
 
 def custom_opcodes(line: str):
@@ -62,6 +64,8 @@ def main(file):
         code = add_c_words(code, len(code.split(",")))
     str = get_func(len(code.split(",")))
     with open("../srcs/create_code.c", "wt") as f:
+        # print(code)
+        # print(str)
         f.write(code)
         f.write(str)
 

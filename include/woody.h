@@ -158,7 +158,7 @@ void                *ft_mmap(size_t lengthint, int prot, int flags, int fd, off_
 int                 get_fd(int argc, char **argv, struct stat **buf);
 int                 memncat(void *src, size_t index, void *dst, size_t n);
 int                 check_file(unsigned char *buf, size_t size);
-size_t              find_opcode(unsigned char *buf, size_t size, unsigned char *opcodes, size_t size_opcodes);
+size_t              find_opcode(unsigned char *buf, size_t size, unsigned char *opcodes, size_t size_opcodes, int num);
 void                additionSurOctets(unsigned char *buffer, size_t taille, unsigned int nombre);
 int                 is_in_luint_table(long unsigned int wanted, long unsigned int *table, size_t size);
 

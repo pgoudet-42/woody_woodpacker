@@ -28,12 +28,36 @@ void    change_entry_point(unsigned char *buf, size_t new_entry_point) {
     buf[0x18] = new_entry_point;
 }
 
-unsigned char *get_new_buff(struct code code, unsigned char *buf, struct ELFheaders64 elfHeader, size_t file_size) {
+void change_rel_values(struct code code, struct ELFheaders64 elfHeader) {
+    unsigned char set_rcx[] = {0xb9, 0x34, 0x12, 0x00, 0x00};
+    unsigned char set_rdi[] = {0x48, 0x8d, 0x3d};
+    unsigned char set_rsi[] = {0x48, 0x8d, 0x35};
+    size_t opcode_position;
+    size_t offset_rdi_symbol;
+    size_t offset_rsi_symbol;
     int offset;
-    unsigned char *final = NULL;
 
     offset = find_offset_nentry_oentry(elfHeader.e_entry, code.offset_injection + code.key_size + code.code_size);
     cpy_mem_little(&(code.code[code.code_size - 4]), offset);
+    opcode_position = find_opcode(code.code, code.code_size, set_rcx, sizeof(set_rcx), 0);
+    cpy_mem_little(&(code.code[opcode_position + 1]),(int)code.code_size);
+
+    opcode_position = find_opcode(code.code, code.code_size, set_rdi, sizeof(set_rdi), 1) + sizeof(set_rdi);
+    offset_rdi_symbol = offset + code.code_size - opcode_position - sizeof(set_rdi) - 1;
+    cpy_mem_little(&(code.code[opcode_position]),(int)offset_rdi_symbol);
+    opcode_position = find_opcode(code.code, code.code_size, set_rsi, sizeof(set_rsi), 0) + sizeof(set_rsi);
+    offset_rsi_symbol = -(opcode_position + code.key_size + sizeof(set_rsi) + 1);
+    cpy_mem_little(&(code.code[opcode_position]),(int)offset_rsi_symbol);
+}
+
+unsigned char *get_new_buff(struct code code, unsigned char *buf, struct ELFheaders64 elfHeader, size_t file_size) {
+    unsigned char *final = NULL;
+    unsigned char str[] = {0x2E, 0x2E, 0x2E, 0x0A, 0x57, 0x4F, 0x4F, 0x44, 0x59, 0x2E, 0x2E, 0x2E, 0x0A};
+
+
+    change_rel_values(code , elfHeader);
+    memncat(code.code, code.code_size, str, 13);
+    code.code_size += 13;
 
     final = malloc(file_size);
     if (!final)

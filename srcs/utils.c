@@ -84,18 +84,26 @@ int check_file(unsigned char *buf, size_t size) {
     return (0);
 }
 
-size_t find_opcode(unsigned char *buf, size_t size, unsigned char *opcodes, size_t size_opcodes) {
+size_t find_opcode(unsigned char *buf, size_t size, unsigned char *opcodes, size_t size_opcodes, int num) {
     size_t j = 0;
+    size_t positions[100];
+    int k = 0;
 
     for (size_t i = 0; i < size; i++) {
         if (buf[i] == opcodes[0]) {
-            while (j < size_opcodes && buf[i + j] == opcodes[j])
+            while (j < size_opcodes && buf[i + j] == opcodes[j]) {
                 j++;
-            if (j == size_opcodes)
-                return (i);
+            }
+            if (j == size_opcodes) {
+                positions[k++] = i;
+                i = i + j;
+                j = 0;
+            }
         }
     }
-    return (0);
+    // for (int i = 0; i < k; i++)
+    //     printf("position i = %ld\n", positions[i]);
+    return (positions[num]);
 }
 
 void additionSurOctets(unsigned char *buffer, size_t taille, unsigned int nombre) {
