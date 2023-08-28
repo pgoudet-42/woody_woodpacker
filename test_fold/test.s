@@ -8,6 +8,7 @@ section .text
 _start:
     nop
     nop
+    push rsp
     push rax
     push rdi
     push rsi
@@ -21,6 +22,12 @@ _start:
     mov rax, 10
     syscall
 
+    mov rdi, 1
+    lea rsi, [rel $ + 0x38]
+    mov rdx, 13
+    mov rax, 1
+    syscall
+
     lea rdi, [rel $ - 0x136] ; offset encrypted symbol
     lea rsi, [rel $ - 0x30] ; debut de key
     mov rcx, 0x1234 ; sera change par le code c
@@ -30,8 +37,9 @@ _start:
         xor al, [rdi]
         stosb
         loop my_loop
-    pop rax
-    pop rdi
-    pop rsi
-    pop rdx
     pop rcx
+    pop rdx
+    pop rsi
+    pop rdi
+    pop rax
+    pop rsp

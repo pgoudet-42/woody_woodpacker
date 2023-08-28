@@ -36,7 +36,7 @@ int woody(unsigned char *buf, size_t size) {
     printf("Code size: %lx\n", glob_code.code_size);
 
     find_offset_injection(buf, elfheader);
-    buf = change_buffer(glob_code, buf, elfheader, size);
+    buf = change_buffer(&glob_code, buf, elfheader, size);
     apply_xor(&(buf[sym.st_value]), glob_code.key_size, (char *)glob_code.key);
     write_file(buf, size + glob_code.code_size);
     return (0);

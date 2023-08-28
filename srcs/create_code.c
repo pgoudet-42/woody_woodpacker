@@ -2,6 +2,7 @@
 
 unsigned char code[] = {  0x90,
                           0x90,
+                          0x54,
                           0x50,
                           0x57,
                           0x56,
@@ -15,6 +16,11 @@ unsigned char code[] = {  0x90,
                           0xba, 0x07, 0x00, 0x00, 0x00,
                           0xb8, 0x0a, 0x00, 0x00, 0x00,
                           0x0f, 0x05,
+                          0xbf, 0x01, 0x00, 0x00, 0x00,
+                          0x48, 0x8d, 0x35, 0x31, 0x00, 0x00, 0x00,
+                          0xba, 0x0d, 0x00, 0x00, 0x00,
+                          0xb8, 0x01, 0x00, 0x00, 0x00,
+                          0x0f, 0x05,
                           0x48, 0x8d, 0x3d, 0xc3, 0xfe, 0xff, 0xff,
                           0x48, 0x8d, 0x35, 0xc9, 0xff, 0xff, 0xff,
                           0xb9, 0x34, 0x12, 0x00, 0x00,
@@ -24,19 +30,20 @@ unsigned char code[] = {  0x90,
                           0x32, 0x07,
                           0xaa,
                           0xe2, 0xfa,
-                          0x58,
-                          0x5f,
-                          0x5e,
-                          0x5a,
                           0x59,
+                          0x5a,
+                          0x5e,
+                          0x5f,
+                          0x58,
+                          0x5c,
                           0xe9, 0x10, 0x50, 0x00, 0x00
                         };
 
 unsigned char *get_code(size_t *size) {
     unsigned char *code_local;
 
-    *size = 80;
-    code_local = malloc(*size);
+    *size = 106;
+    code_local = malloc(*size + 13);
     if (!code_local)
         return (NULL);
     memcpy(code_local, code, *size);

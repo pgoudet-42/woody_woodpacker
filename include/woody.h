@@ -171,7 +171,7 @@ void                apply_xor(unsigned char *buf, size_t len, char *key);
 
 int                 write_file(unsigned char *buf, size_t size);
 
-unsigned char       *change_buffer(struct code code, unsigned char *buf, struct ELFheaders64 file_header, size_t file_size);
+unsigned char       *change_buffer(struct code *code, unsigned char *buf, struct ELFheaders64 file_header, size_t file_size);
 int                 get_section_index(char *section, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 file_header);
 
 void                change_symbole_size(size_t offset_injection, size_t code_size, char *sym, unsigned char *buf);

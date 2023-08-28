@@ -37,7 +37,7 @@ unsigned char *get_code(size_t *size) {
     unsigned char *code_local;
 
     *size = %d;
-    code_local = malloc(*size);
+    code_local = malloc(*size + 13);
     if (!code_local)
         return (NULL);
     memcpy(code_local, code, *size);
