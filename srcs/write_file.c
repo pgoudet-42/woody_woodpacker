@@ -8,6 +8,4 @@ int write_file(unsigned char *buf, size_t size) {
         return (-1);
 
     return (write(fd, buf, size));
-    free(buf);
-    return (0);
 }

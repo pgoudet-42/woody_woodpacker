@@ -51,4 +51,5 @@ void    change_sections_header_offset(size_t size, size_t offset_injection, unsi
         if (sheaders[i].sh_offset + sheaders[i].sh_size == offset_injection)
             additionSurOctets(&(buf[offset + 0x20]), 8, size);
     }
+    free(sheaders);
 }

@@ -1,1 +1,1 @@
-gcc -Wall -Wextra  srcs/*.c -L$(pwd)/libft -lft -o woody_woodpacker
+gcc -Wall -Wextra -Werror -g srcs/*.c -L$(pwd)/libft -lft -o woody_woodpacker

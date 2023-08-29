@@ -59,7 +59,7 @@ unsigned char *get_new_buff(struct code *code, unsigned char *buf, struct ELFhea
     memncat(code->code, code->code_size, str, 13);
     code->code_size += 13;
 
-    final = malloc(file_size);
+    final = malloc(file_size + 120);
     if (!final)
         return (NULL);
     memncat(final, 0, buf, code->offset_injection);
@@ -84,8 +84,11 @@ unsigned char *change_buffer(struct code *code, unsigned char *buf, struct ELFhe
     change_sections_header_offset(code->key_size + code->code_size, code->offset_injection, buf, elfHeader);
     sheaders = get_section_headers_64(buf, elfHeader);
     sym_name = get_sym_name_from_offset(buf, code->offset_injection, sheaders, elfHeader);
-    if (sym_name)
+    if (sym_name) {
         change_symbole_size(code->offset_injection, code->key_size + code->code_size, sym_name, buf);
-    free(sym_name);
+        free(sym_name);
+    }
+    free(sheaders);
+    free(pheaders);
     return (buf);
 }

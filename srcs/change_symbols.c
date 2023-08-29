@@ -22,8 +22,6 @@ void    change_symbole_size(size_t offset_injection, size_t code_size, char *sym
     struct ELFheaders64 elfheader;
     struct sheaders64 *sheaders;
     
-    
-
     elfheader = get_elfHeader64_little_endian(buf);
     sheaders = get_section_headers_64(buf, elfheader);
 
@@ -41,4 +39,5 @@ void    change_symbole_size(size_t offset_injection, size_t code_size, char *sym
       }
     }
     free(syms);
+    free(sheaders);
 }

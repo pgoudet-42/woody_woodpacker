@@ -60,6 +60,7 @@ char *get_sym_name_from_offset(unsigned char *buf, size_t offset, struct sheader
     size_t nb;
     size_t value = 0xFFFFFFFFFFFFFFFF;
     int index = -1;
+    char *name;
 
     syms = get_syms_64(elfheader, sheaders, buf, &nb);
     for (size_t i = 0; i < nb; i++) {
@@ -73,7 +74,9 @@ char *get_sym_name_from_offset(unsigned char *buf, size_t offset, struct sheader
     }
     if (index == -1)
         return (NULL);
-    return (get_sym_name_64(buf, elfheader, sheaders, syms[index].st_name));
+    name = get_sym_name_64(buf, elfheader, sheaders, syms[index].st_name);
+    free(syms);
+    return (name);
 }
 
 
