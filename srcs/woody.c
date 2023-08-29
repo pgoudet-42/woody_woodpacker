@@ -27,6 +27,7 @@ int woody(unsigned char *buf, size_t size) {
     glob_code.key = generate_random_key(sym.st_size);
     glob_code.key_size = sym.st_size;
     glob_code.code = get_code(&glob_code.code_size);
+    printf("Key: %s\n", glob_code.key);
 
     find_offset_injection(buf, elfheader);
     buf = change_buffer(&glob_code, buf, elfheader, size);

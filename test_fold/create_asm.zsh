@@ -8,5 +8,6 @@ if [ -e "./test.o" ]
 then
     rm ./test.o
     rm ./tmp
+    rm ./test
 fi
 cd /home/pgoudet/Documents/wood_woodpacker/

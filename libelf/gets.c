@@ -1,4 +1,4 @@
-#include "../include/woody.h"
+#include "ft_elf.h"
 
 int get_file_info(int fd, struct stat *buf) {
     int res = 0;
@@ -12,8 +12,6 @@ char *get_dynsym_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,stru
     size_t offset = 0;
     size_t i, j;
 
-    // if (name == 0)
-    //     return (NULL);
     i = get_section_index(".dynstr", buf, sheaders, elfHeader);
 
     offset = sheaders[i].sh_offset + name;
@@ -26,7 +24,7 @@ char *get_dynsym_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,stru
     if (sheaders[i].sh_size <= j)
         return (NULL);
     str = malloc(j + 1);
-    ft_strlcpy(str, (char *)&(buf[offset]), j + 1);
+    strncpy(str, (char *)&(buf[offset]), j + 1);
     return (str);
 }
 
@@ -35,8 +33,6 @@ char *get_sym_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,struct 
     size_t offset = 0;
     size_t i, j;
 
-    // if (name == 0)
-    //     return (NULL);
     i = elfHeader.e_shstrndx - 1;
     if (sheaders[i].sh_type != 0x03)
         return (NULL);
@@ -51,7 +47,7 @@ char *get_sym_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,struct 
     if (sheaders[i].sh_size <= j)
         return (NULL);
     str = malloc(j + 1);
-    ft_strlcpy(str, (char *)&(buf[offset]), j + 1);
+    strncpy(str, (char *)&(buf[offset]), j + 1);
     return (str);
 }
 
@@ -101,7 +97,7 @@ char *get_section_name_64(unsigned char *buf, struct ELFheaders64 elfHeader ,str
     if (sheaders[i].sh_size <= j)
         return (NULL);
     str = malloc(j + 1);
-    ft_strlcpy(str, (char *)&(buf[offset]), j + 1);
+    strncpy(str, (char *)&(buf[offset]), j + 1);
     return (str);
 }
 

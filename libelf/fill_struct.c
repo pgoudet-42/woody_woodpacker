@@ -1,4 +1,4 @@
-#include "../include/woody.h"
+#include "ft_elf.h"
 
 struct ELFheaders64 get_elfHeader64_little_endian(unsigned char *buf) {
     struct ELFheaders64 elfHeader;
