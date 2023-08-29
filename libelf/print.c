@@ -1,4 +1,4 @@
-#include "../include/woody.h"
+#include "libftelf.h"
 
 void ft_print_stat(struct stat *buf) {
     printf("buf.st_dev = %ld\n", buf->st_dev);

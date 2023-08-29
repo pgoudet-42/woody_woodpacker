@@ -4,8 +4,9 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-// #include "../libft/libft.h"
-
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <fcntl.h>
 
 #ifndef FT_ELF_H
 #define FT_ELF_H
@@ -119,5 +120,27 @@ Elf64_Dyn           *get_Elf64_Dyns_little(unsigned char *buf, struct sheaders64
 
 size_t              calcul_file_size(size_t code_size, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader);
 unsigned long int   find_p_align(struct pheaders64 ph);
+
+int                 open_file(char *path);
+void                sort_tab(int **tab, size_t size);
+void                *ft_mmap(size_t lengthint, int prot, int flags, int fd, off_t offset);
+int                 get_fd(int argc, char **argv, struct stat **buf);
+int                 memncat(void *src, size_t index, void *dst, size_t n);
+int                 check_file(unsigned char *buf, size_t size);
+size_t              find_opcode(unsigned char *buf, size_t size, unsigned char *opcodes, size_t size_opcodes, int num);
+void                additionSurOctets(unsigned char *buffer, size_t taille, unsigned int nombre);
+int                 is_in_luint_table(long unsigned int wanted, long unsigned int *table, size_t size);
+
+char                *toBinary(int n, int len);
+void                ft_print_stat(struct stat *buf);
+void                print_elf64_sym(struct Elf64_Sym sym);
+void                ft_print_hexa_raw(unsigned char *buf, size_t len);
+void                print_pHeader64(struct pheaders64 pheader);
+void                print_sHeader64(struct sheaders64 sheader);
+void                print_elfHeader64(struct ELFheaders64 elfHeader);
+void                print_sections_names(struct sheaders64 *sheaders, unsigned char *buf, struct ELFheaders64 elfheader);
+void                print_rela64(Elf64_Rela rela);
+void                print_rel64(Elf64_Rel rel);
+void                print_Elf64_Dyn(Elf64_Dyn dyn);
 
 #endif

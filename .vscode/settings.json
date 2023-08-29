@@ -2,6 +2,8 @@
     "files.associations": {
         "cstddef": "c",
         "libft.h": "c",
-        "errno.h": "c"
+        "errno.h": "c",
+        "stdlib.h": "c",
+        "ft_elf.h": "c"
     }
 }

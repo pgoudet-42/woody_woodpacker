@@ -1,4 +1,4 @@
-#include "../include/woody.h"
+#include "libftelf.h"
 
 int open_file(char *path) {
     int fd = -1;
@@ -101,8 +101,6 @@ size_t find_opcode(unsigned char *buf, size_t size, unsigned char *opcodes, size
             }
         }
     }
-    // for (int i = 0; i < k; i++)
-    //     printf("position i = %ld\n", positions[i]);
     return (positions[num]);
 }
 

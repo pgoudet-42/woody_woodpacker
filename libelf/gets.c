@@ -1,4 +1,4 @@
-#include "ft_elf.h"
+#include "libftelf.h"
 
 int get_file_info(int fd, struct stat *buf) {
     int res = 0;

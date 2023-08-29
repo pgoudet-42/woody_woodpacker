@@ -1,4 +1,4 @@
-#include "ft_elf.h"
+#include "libftelf.h"
 
 
 size_t calcul_file_size(size_t code_size, unsigned char *buf, struct sheaders64 *sheaders, struct ELFheaders64 elfHeader) {

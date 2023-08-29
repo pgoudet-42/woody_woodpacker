@@ -1,8 +1,8 @@
-SRCS = fill_struct.c get_elf_file_info.c gets.c
+SRCS = fill_struct.c get_elf_file_info.c gets.c utils.c print.c
 
 OBJS = ${SRCS:.c=.o}
 
-NAME = libft_elf.a
+NAME = libftelf.a
 
 CC = gcc
 
