@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #ifndef FT_ELF_H
 #define FT_ELF_H
